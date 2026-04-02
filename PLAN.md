@@ -492,7 +492,8 @@ All coders work in parallel. Managers review after coders commit.
 - Each player collides with platforms
 - Register all players with `GravitySystem.addBody()`
 - Kill zone check loops over all players
-- Players pass through each other (no player-player collision)
+- ~~Players pass through each other (no player-player collision)~~
+- **Player collision** — head stomp (top 25% of sprite = kill + bounce) and side bump knockback (force 350, 0.3s invulnerability) `[DONE]` (PR #28)
 - Backwards compatible: if no MenuScene data, default to 4 players
 - **Win condition:** When only 1 player remains alive, end the match and transition to GameOverScene showing which player won (e.g. "Player 2 wins!")
 - `checkWinCondition()` runs each frame — counts alive players, triggers game over when <= 1
