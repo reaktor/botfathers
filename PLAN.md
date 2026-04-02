@@ -572,20 +572,27 @@ Countdown (in GameScene):
 **Who:** Team 2 (while Teams 1 & 3 finish Phase 2 / early Phase 3)
 **Files:** Modify `GameScene.js`, `GravitySystem.js`, `BlackHole.js`, `config.js`, `SpriteFactory.js`, `MenuScene.js`
 
-#### Agent A — Chaos Event Wiring + Black Hole Eats Platforms
-Wire Team 2's chaos flags into Team 3's systems (both now on main).
+#### Agent A — Event Horizon Flash + Black Hole Eats Platforms
+Wire remaining chaos flag into BlackHole + add platform-eating overlap.
+NOTE: gravitySurge → GravitySystem is ALREADY DONE by Team 3 (GravitySystem.js:68-71). Do NOT duplicate.
 
 ```
 FILES YOU OWN:
-- js/systems/GravitySystem.js (add gravitySurge check)
 - js/entities/BlackHole.js (add eventHorizonFlash check)
-- js/scenes/GameScene.js (add black hole ↔ platform overlap in setupColliders or create())
+- js/scenes/GameScene.js (add black hole ↔ platform overlap in update loop)
 
 Spec:
-- GravitySystem.updateGravity(delta): if scene.chaosSystem.isActive('gravitySurge'), double the pull force for that frame
-- BlackHole: if scene.chaosSystem.isActive('eventHorizonFlash'), temporarily double visual radius and kill zone for that frame
-- Add overlap check: when black hole overlaps a platform, call AP.PlatformCollapse.startCollapse(scene, plat) — the black hole eats platforms it touches
-- All changes must be additive — don't break existing gravity/blackhole behaviour
+- BlackHole.update(): check if scene.chaosSystem exists and isActive('eventHorizonFlash')
+  - If active: temporarily double the visual radius and kill zone radius for that frame
+  - When event ends, radius returns to normal (don't permanently grow)
+  - Access chaos system via: this.scene.chaosSystem.isActive('eventHorizonFlash')
+- GameScene.update(): after blackHole.update(), loop over this._platformSprites
+  - For each active (non-collapsed) platform, check if blackHole overlaps it
+  - Use distance check between blackHole center and platform center vs blackHole.radius + platform half-width
+  - If overlapping: call AP.PlatformCollapse.startCollapse(this, plat)
+  - This makes the black hole "eat" platforms it drifts into
+- All changes must be additive — don't break existing blackhole behaviour
+- Do NOT touch GravitySystem.js (gravitySurge already wired by Team 3)
 ```
 
 #### Agent B — Procedural Arena + Branding
