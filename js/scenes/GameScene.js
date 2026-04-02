@@ -135,6 +135,7 @@
       this.updatePlatforms(delta);
       this.updateChaos(time, delta);
 
+
       // Update black hole (drift, grow, redraw)
       if (this.blackHole) {
         this.blackHole.update(time, delta);

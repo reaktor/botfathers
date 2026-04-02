@@ -2,12 +2,12 @@
   'use strict';
 
   var BASE_RADIUS = 20;
-  var GROWTH_PER_SECOND = 0.4;       // passive growth rate (pixels/sec)
+  var GROWTH_PER_SECOND = 2;          // passive growth rate (pixels/sec)
   var FEED_GROWTH = 3;                // radius increase per bullet absorbed
   var DRIFT_SPEED = 0.3;             // how fast the sine/cosine drift cycles
   var DRIFT_RANGE = 0.15;            // fraction of gameSize for drift amplitude
   var MAX_RADIUS = 150;               // cap to prevent absurd sizes
-  var BASE_PULL_STRENGTH = 8000;     // pull strength at base radius
+  var BASE_PULL_STRENGTH = 5000000;  // pull strength at base radius (inverse-square needs large values)
   var PULSE_MIN = 0.85;
   var PULSE_MAX = 1.15;
   var PULSE_SPEED = 1500;            // ms per pulse cycle
