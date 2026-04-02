@@ -14,6 +14,9 @@
       var size = AP.gameSize;
       this.controls = AP.InputManager.create(this);
 
+      // --- Parallax starfield (behind everything, depth -10) ---
+      this._setupStarfield(size);
+
       // --- Tiled cyberpunk background ---
       this._buildBackground(size);
 
@@ -110,6 +113,68 @@
 
     _buildBackground: function (size) {
       this.add.image(size / 2, size / 2, 'bg-panels');
+    },
+
+    /**
+     * _setupStarfield() — creates a slow-drifting parallax star layer
+     * behind everything (depth -10). Stars are tiny circles of varying
+     * size (0.5-2px) that drift slowly upward/diagonal at 5-15 px/s.
+     * Smaller stars drift slower to give a depth/parallax feel.
+     */
+    _setupStarfield: function (size) {
+      var STAR_COUNT = 40 + Math.floor(Math.random() * 21); // 40-60
+      var starColors = [0xffffff, 0xccddff, 0xaabbff, 0xddeeff, 0x99aaff];
+      this._stars = [];
+
+      for (var i = 0; i < STAR_COUNT; i++) {
+        var radius = 0.5 + Math.random() * 1.5; // 0.5 - 2px
+        var alpha = 0.2 + Math.random() * 0.6;  // 0.2 - 0.8
+        var color = starColors[Math.floor(Math.random() * starColors.length)];
+
+        // Speed proportional to size — smaller = slower = further away
+        // Range: ~5 px/s for 0.5px stars, ~15 px/s for 2px stars
+        var speed = 5 + (radius - 0.5) * (10 / 1.5);
+
+        // Slight horizontal drift — each star drifts at a slightly different angle
+        var driftAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.4; // mostly upward, slight diagonal
+
+        var g = this.add.graphics();
+        g.fillStyle(color, alpha);
+        g.fillCircle(0, 0, radius);
+        g.setPosition(Math.random() * size, Math.random() * size);
+        g.setDepth(-10);
+
+        this._stars.push({
+          graphic: g,
+          speed: speed,
+          dx: Math.cos(driftAngle) * speed,
+          dy: Math.sin(driftAngle) * speed
+        });
+      }
+    },
+
+    /**
+     * _updateStarfield() — move stars by their drift vector, wrap around
+     * screen edges so the starfield is seamless and infinite.
+     */
+    _updateStarfield: function (delta) {
+      if (!this._stars) return;
+      var dt = delta / 1000;
+      var size = AP.gameSize;
+
+      for (var i = 0; i < this._stars.length; i++) {
+        var star = this._stars[i];
+        var g = star.graphic;
+
+        g.x += star.dx * dt;
+        g.y += star.dy * dt;
+
+        // Wrap around screen edges
+        if (g.y < -4) g.y = size + 2;
+        if (g.y > size + 4) g.y = -2;
+        if (g.x < -4) g.x = size + 2;
+        if (g.x > size + 4) g.x = -2;
+      }
     },
 
     /**
@@ -263,6 +328,9 @@
     },
 
     update: function (time, delta) {
+      // Starfield drifts always — even during countdown and game over
+      this._updateStarfield(delta);
+
       // Skip all gameplay logic while countdown is active (Phase 2.5)
       if (this._countdownActive) return;
       if (this._gameOver) return;
