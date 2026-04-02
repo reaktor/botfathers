@@ -617,7 +617,7 @@
           if (this.players[ci].removeAnimImg) this.players[ci].removeAnimImg();
         }
         this.time.delayedCall(1000, function () {
-          self.scene.start('GameOverScene', { winner: winner });
+          self.scene.start('GameOverScene', { winner: winner, playerCount: self.playerCount });
         });
       }
     },

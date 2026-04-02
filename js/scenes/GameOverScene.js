@@ -13,8 +13,8 @@
     },
 
     init: function (data) {
-      // winner is a 0-based player index
       this.winner = (data && typeof data.winner === 'number') ? data.winner : 0;
+      this.playerCount = (data && data.playerCount) || 4;
     },
 
     create: function () {
@@ -109,12 +109,7 @@
       var enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
       var self = this;
       enterKey.once('down', function () {
-        // Go to MenuScene if it exists, otherwise restart GameScene
-        if (AP.MenuScene) {
-          self.scene.start('MenuScene');
-        } else {
-          self.scene.start('GameScene');
-        }
+        self.scene.start('GameScene', { playerCount: self.playerCount });
       });
     }
   });
