@@ -116,6 +116,7 @@
       img.src = (AP.BOTFATHER_DATA && AP.BOTFATHER_DATA.idle) || 'assets/botfather/character_idle.webp';
       var imgW = spriteDisplaySize * scaleX;
       var imgH = spriteDisplaySize * scaleY;
+      img.className = 'ap-sprite-overlay';
       img.style.cssText = 'position:absolute;pointer-events:none;image-rendering:pixelated;'
         + 'width:' + imgW + 'px;height:' + imgH + 'px;'
         + 'left:' + (canvasRect.left + (centerX - spriteDisplaySize / 2) * scaleX) + 'px;'

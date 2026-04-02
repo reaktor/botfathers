@@ -11,8 +11,8 @@
     },
 
     create: function () {
-      // Kill ALL orphaned DOM imgs from menu/previous scene
-      var orphans = document.querySelectorAll('body > img');
+      // Kill ALL orphaned AP sprite overlays from menu/previous scene
+      var orphans = document.querySelectorAll('.ap-sprite-overlay');
       for (var oi = 0; oi < orphans.length; oi++) {
         orphans[oi].parentNode.removeChild(orphans[oi]);
       }

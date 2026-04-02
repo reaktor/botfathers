@@ -63,6 +63,7 @@
         var b = hexColor & 0xff;
         // Build a CSS tint overlay using a wrapper div
         var wrapper = document.createElement('div');
+        wrapper.className = 'ap-sprite-overlay';
         wrapper.style.cssText = 'position:absolute;pointer-events:none;';
         var img = document.createElement('img');
         img.src = ANIM_MAP.idle;
