@@ -10,6 +10,17 @@
     death: 'botfather-death'
   };
 
+  // Animated WebP data URI map (state → base64 src)
+  var ANIM_DATA = AP.BOTFATHER_DATA || {};
+  var ANIM_MAP = {
+    idle: ANIM_DATA.idle,
+    run: ANIM_DATA.run,
+    jump: ANIM_DATA.jump,
+    attack: ANIM_DATA.attack,
+    hurt: ANIM_DATA.hurt,
+    death: ANIM_DATA.death
+  };
+
   AP.Player = new Phaser.Class({
     Extends: Phaser.Physics.Arcade.Sprite,
 
@@ -40,6 +51,65 @@
       // Apply player color tint
       var color = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
       this.setTint(color);
+
+      // --- Animated WebP overlay (DOM img synced to sprite position) ---
+      this._animImg = null;
+      this._animState = '';
+      if (ANIM_MAP.idle) {
+        var img = document.createElement('img');
+        img.src = ANIM_MAP.idle;
+        img.style.cssText = 'position:absolute;pointer-events:none;image-rendering:pixelated;transform-origin:center;';
+        document.body.appendChild(img);
+        this._animImg = img;
+        this._animState = 'idle';
+        // Hide the Phaser sprite since DOM img replaces it
+        this.setAlpha(0);
+      }
+    },
+
+    /** Sync DOM img position/size/flip to match the Phaser sprite each frame. */
+    syncAnimImg: function () {
+      var img = this._animImg;
+      if (!img) return;
+
+      if (!this.active || !this.visible) {
+        img.style.display = 'none';
+        return;
+      }
+      img.style.display = '';
+
+      var canvas = this.scene.game.canvas;
+      var rect = canvas.getBoundingClientRect();
+      var gameW = this.scene.cameras.main.width;
+      var gameH = this.scene.cameras.main.height;
+      var sx = rect.width / gameW;
+      var sy = rect.height / gameH;
+
+      var dispW = this.displayWidth * sx;
+      var dispH = this.displayHeight * sy;
+      var screenX = rect.left + (this.x - this.displayWidth / 2) * sx;
+      var screenY = rect.top + (this.y - this.displayHeight / 2) * sy;
+
+      img.style.width = dispW + 'px';
+      img.style.height = dispH + 'px';
+      img.style.left = screenX + 'px';
+      img.style.top = screenY + 'px';
+      img.style.transform = this.facing === -1 ? 'scaleX(-1)' : '';
+
+      // Switch animated WebP source on state change
+      var src = ANIM_MAP[this.currentState];
+      if (src && this._animState !== this.currentState) {
+        this._animState = this.currentState;
+        img.src = src;
+      }
+    },
+
+    /** Remove DOM img on destroy. */
+    removeAnimImg: function () {
+      if (this._animImg && this._animImg.parentNode) {
+        this._animImg.parentNode.removeChild(this._animImg);
+        this._animImg = null;
+      }
     },
 
     handleInput: function (keys, delta, holes, gameSize, boundaryThickness) {
@@ -142,6 +212,7 @@
 
       // Deactivate the player
       this.setActive(false).setVisible(false);
+      this.removeAnimImg();
       if (this.body) {
         this.body.setVelocity(0, 0);
         this.body.enable = false;

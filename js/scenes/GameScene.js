@@ -335,7 +335,7 @@
       if (this._countdownActive) return;
       if (this._gameOver) return;
 
-      // Handle input for all alive players
+      // Handle input for all alive players + sync animated WebP overlays
       for (var i = 0; i < this.players.length; i++) {
         var p = this.players[i];
         if (p.active) {
@@ -347,6 +347,7 @@
             this.boundaryThickness
           );
         }
+        if (p.syncAnimImg) p.syncAnimImg();
       }
 
       // Gravity after input so pull accumulates when idle
@@ -403,7 +404,11 @@
         var winner = alive.length === 1 ? alive[0] : 0;
 
         // Short delay before showing game over
+        // Clean up all player DOM imgs before leaving
         var self = this;
+        for (var ci = 0; ci < this.players.length; ci++) {
+          if (this.players[ci].removeAnimImg) this.players[ci].removeAnimImg();
+        }
         this.time.delayedCall(1000, function () {
           self.scene.start('GameOverScene', { winner: winner });
         });
