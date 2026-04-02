@@ -53,7 +53,8 @@
 
 ## Audio (Optional)
 
-- Sound effects via the **Web Audio API** — no external audio files required
+- Sound effects via **Tone.js** (v15.1.22, loaded via CDN: `https://cdn.jsdelivr.net/npm/tone/build/Tone.min.js`) — no external audio files required
+- Retro cyberpunk/synthwave sound design: square/pulse oscillators, bitcrusher, distortion filters
 - Background music optional, off by default
 
 ---

@@ -75,7 +75,7 @@ The bullet curve is the core skill mechanic. Skilled players can:
 - Each player starts with **3 HP**
 - A bullet hit deals **1 HP** of damage
 - Falling into the black hole is **instant death**, regardless of HP
-- Falling off the edges of the screen is **instant death**, regardless of HP
+- **Screen wrapping:** walking off the left/right edge wraps to the opposite side. The floor and ceiling have holes (positioned opposite each other) — falling through a floor hole makes the player appear from the matching ceiling hole, and jumping through a ceiling hole drops from the corresponding floor hole. Momentum is preserved.
 - When a player is eliminated, they **explode** and drop any powerup they were currently holding
 - Dropped powerups float briefly and can be picked up by surviving players
 

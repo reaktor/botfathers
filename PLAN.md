@@ -40,16 +40,17 @@ All files use `window.AP` global namespace. No modules, no bundler, works with `
 
 ## Milestones
 
-### Milestone 1 — Scaffold + Movement `[NOT STARTED]`
+### Milestone 1 — Scaffold + Movement `[DONE]`
 **Files:** `index.html`, `js/config.js`, `js/utils/SpriteFactory.js`, `js/systems/InputManager.js`, `js/entities/Player.js`, `js/scenes/BootScene.js`, `js/scenes/GameScene.js`
 
 - Set up Phaser 3 with Arcade Physics
-- One player (P1) moving and jumping on hardcoded platforms
+- One player (P1) moving and jumping on hardcoded platforms (use a simple array of rects — easy to swap for real arena layout in M2)
 - Procedural sprites via `Graphics.generateTexture()`
-- Basic gravity (Phaser's `arcade.gravity.y = 300`)
+- Basic gravity (Phaser's `arcade.gravity.y = 300`), movement/physics must use `delta` from Phaser's `update(time, delta)` for frame-rate independence
 - Game is supposed to be full screen (square with full height)
-- If the character reaches either the left or right boundary, it should reappear on the opposite side—this is commonly known as horizontal screen wrapping.
-- **Testable:** Open `index.html`, one colored rectangle moves/jumps on platforms
+- **Horizontal screen wrapping:** if the character reaches either the left or right boundary, it reappears on the opposite side
+- **Vertical screen wrapping via holes:** the floor and ceiling each have holes (positioned opposite each other). Falling through a floor hole makes the player appear from the matching ceiling hole (and vice versa — jumping through a ceiling hole drops from the corresponding floor hole). Player momentum is preserved through the wrap.
+- **Testable:** Open `index.html`, one colored rectangle moves/jumps on platforms, wraps horizontally, wraps vertically through floor/ceiling holes
 
 ### Milestone 2 — Multiplayer Input + Arena `[NOT STARTED]`
 **Files:** Modify `InputManager.js`, `GameScene.js`, `Player.js`
@@ -67,7 +68,7 @@ All files use `window.AP` global namespace. No modules, no bundler, works with `
 - Custom inverse-square gravity pull applied per-frame (NOT Phaser's built-in)
 - Pull strength scales with distance: mild at edges, overwhelming near center
 - Black hole drifts slowly, grows passively over time
-- Contact with black hole or screen edge = instant death
+- Contact with black hole = instant death
 - **Testable:** Players get pulled toward center, die if they touch it
 
 ### Milestone 4 — Shooting + Bullet Curving `[NOT STARTED]`
@@ -149,7 +150,10 @@ Chaos events and polish are done together at the end.
 > When something changes from the original plan, log it here. Keep entries short.
 > Format: `[DATE HH:MM] [WHO] — What changed and why`
 
-[2026-04-02 HH:MM] Johan — Using Tone.js via CDN for audio instead of raw Web Audio API. Going for retro cyberpunk/synthwave sound. Gritty square waves, bitcrusher, distortion filters.
+[2026-04-02 13:20] Johan — Using Tone.js via CDN for audio instead of raw Web Audio API. Going for retro cyberpunk/synthwave sound. Gritty square waves, bitcrusher, distortion filters.
+[2026-04-02 13:40] Claude — Milestone 1: horizontal wrapping at screen edges + vertical wrapping through floor/ceiling holes (opposite positions). No screen-edge death — wrapping replaces it.
+[2026-04-02 13:40] Claude — Milestone 1: all movement/gravity must use delta-time from Phaser's update() for frame-rate independence per implementation_requirements.md.
+[2026-04-02 13:40] Claude — Milestone 1: hardcoded platforms should be a simple data array (easy to swap for real arena in M2).
 
 <!-- Example entries:
 [2026-04-02] Johan — Switched from inverse-square to linear gravity falloff, felt more fun in playtesting
