@@ -104,8 +104,8 @@
       });
 
       // --- Single centered character sprite (original colors, no tint) ---
-      var spriteTexture = 'char-idle';
-      var spriteNativeSize = 214;
+      var spriteTexture = AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback';
+      var spriteNativeSize = AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE;
       var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
       var spriteScale = spriteDisplaySize / spriteNativeSize;
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
