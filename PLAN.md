@@ -145,9 +145,9 @@ Chaos events and polish are done together at the end.
 ## Decisions Log
 
 > When something changes from the original plan, log it here. Keep entries short.
-> Format: `[DATE] [WHO] — What changed and why`
+> Format: `[DATE HH:MM] [WHO] — What changed and why`
 
-[2026-04-02] Johan — Using Tone.js via CDN for audio instead of raw Web Audio API. Going for retro cyberpunk/synthwave sound. Gritty square waves, bitcrusher, distortion filters.
+[2026-04-02 HH:MM] Johan — Using Tone.js via CDN for audio instead of raw Web Audio API. Going for retro cyberpunk/synthwave sound. Gritty square waves, bitcrusher, distortion filters.
 
 <!-- Example entries:
 [2026-04-02] Johan — Switched from inverse-square to linear gravity falloff, felt more fun in playtesting
