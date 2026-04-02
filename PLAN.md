@@ -642,7 +642,7 @@ Branding (MenuScene.js):
 
 ### Phase 3 Polish — Visual Juice (Team 2) `[IN PROGRESS]`
 **Who:** Team 2 (PR branch: team-2/phase-3-polish)
-**Issues:** #25, #22, #21
+**Issues:** #25, #22, #21, #29, #30
 
 #### Agent A — Character Sprites on Title Screen + Death Particles (#25, #21)
 ```
