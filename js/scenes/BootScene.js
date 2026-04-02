@@ -1,6 +1,50 @@
 (function () {
   'use strict';
 
+  var BOTFATHER_ASSETS = [
+    { key: 'botfather-idle',   src: 'assets/botfather/character_idle.webp' },
+    { key: 'botfather-run',    src: 'assets/botfather/character_front_run_run.webp' },
+    { key: 'botfather-jump',   src: 'assets/botfather/character_jump.webp' },
+    { key: 'botfather-attack', src: 'assets/botfather/character_attack.webp' },
+    { key: 'botfather-hurt',   src: 'assets/botfather/character_hurt.webp' },
+    { key: 'botfather-death',  src: 'assets/botfather/character_death.webp' }
+  ];
+
+  /**
+   * Load images via DOM <img> elements (works with file:// protocol)
+   * then add them to Phaser's texture manager.
+   */
+  function loadImagesViaDom(scene, assets, callback) {
+    var loaded = 0;
+    var total = assets.length;
+    var success = false;
+
+    function onLoad(asset, img) {
+      scene.textures.addImage(asset.key, img);
+      loaded++;
+      if (loaded === total) {
+        success = true;
+        callback(true);
+      }
+    }
+
+    function onError() {
+      loaded++;
+      if (loaded === total) {
+        callback(success);
+      }
+    }
+
+    for (var i = 0; i < assets.length; i++) {
+      var img = new Image();
+      img.onload = (function (asset, imgRef) {
+        return function () { onLoad(asset, imgRef); };
+      })(assets[i], img);
+      img.onerror = onError;
+      img.src = assets[i].src;
+    }
+  }
+
   AP.BootScene = new Phaser.Class({
     Extends: Phaser.Scene,
 
@@ -8,24 +52,17 @@
       Phaser.Scene.call(this, { key: 'BootScene' });
     },
 
-    preload: function () {
-      // Botfather character sprites
-      this.load.image('botfather-idle', 'assets/botfather/character_idle.webp');
-      this.load.image('botfather-run', 'assets/botfather/character_front_run_run.webp');
-      this.load.image('botfather-jump', 'assets/botfather/character_jump.webp');
-      this.load.image('botfather-attack', 'assets/botfather/character_attack.webp');
-      this.load.image('botfather-hurt', 'assets/botfather/character_hurt.webp');
-      this.load.image('botfather-death', 'assets/botfather/character_death.webp');
-    },
-
     create: function () {
-      // Check if botfather assets loaded successfully
-      AP.botfatherLoaded = this.textures.exists('botfather-idle');
+      var scene = this;
 
-      // Generate procedural textures (arena, fallback player)
-      AP.SpriteFactory.createTextures(this);
+      loadImagesViaDom(scene, BOTFATHER_ASSETS, function (allLoaded) {
+        AP.botfatherLoaded = allLoaded;
 
-      this.scene.start('GameScene');
+        // Generate procedural textures (arena, fallback player)
+        AP.SpriteFactory.createTextures(scene);
+
+        scene.scene.start('GameScene');
+      });
     }
   });
 })();
