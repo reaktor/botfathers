@@ -35,7 +35,22 @@
       // --- Title (rebranded Phase 2.75 Agent B) ---
       var titleY = h * 0.06;
 
-      var titleLine1 = this.add.text(centerX, titleY, 'BOTFATHERS', {
+      // Random holy-space taglines
+      var taglines = [
+        'In space, no one can hear you confess',
+        'Forgive me Father, for I have grav-sinned',
+        'Holy orders from the mothership',
+        'Bless this mess... of a space station',
+        'Thou shalt not covet thy neighbor\'s platform',
+        'The sermon will be brief. The void will not.',
+        'Ashes to ashes, dust to stardust',
+        'Our Father, who art in zero-G',
+        'First rule of Space Church: float or be floated',
+        'Delivering divine judgement at terminal velocity'
+      ];
+      var chosenTagline = taglines[Math.floor(Math.random() * taglines.length)];
+
+      var titleLine1 = this.add.text(centerX, titleY, 'THE BOTFATHERS', {
         fontFamily: FONT_FAMILY,
         fontSize: Math.max(24, Math.floor(w / 12)) + 'px',
         color: NEON_MAGENTA,
@@ -51,10 +66,11 @@
         align: 'center'
       }).setOrigin(0.5);
 
-      var tagline = this.add.text(centerX, titleY + titleLine1.height + titleLine2.height + 14, 'A Cyberpunk Arena Brawl', {
+      var tagline = this.add.text(centerX, titleY + titleLine1.height + titleLine2.height + 14, '"' + chosenTagline + '"', {
         fontFamily: FONT_FAMILY,
-        fontSize: Math.max(10, Math.floor(w / 40)) + 'px',
+        fontSize: Math.max(10, Math.floor(w / 44)) + 'px',
         color: '#888899',
+        fontStyle: 'italic',
         align: 'center'
       }).setOrigin(0.5);
 
@@ -143,7 +159,7 @@
 
       // --- Player count selector ---
       var selectorY = sep2Y + 30;
-      this.playerCount = 4;
+      this.playerCount = 2;
 
       this.add.text(centerX, selectorY, '[ PLAYERS ]', {
         fontFamily: FONT_FAMILY,
@@ -162,7 +178,7 @@
         color: NEON_CYAN
       }).setOrigin(0.5);
 
-      this._playerCountText = this.add.text(centerX, selectorY, '4', {
+      this._playerCountText = this.add.text(centerX, selectorY, '2', {
         fontFamily: FONT_FAMILY,
         fontSize: arrowSize + 'px',
         color: '#ffffff',
