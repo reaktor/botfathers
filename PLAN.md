@@ -516,7 +516,7 @@ All coders work in parallel. Managers review after coders commit.
 
 ---
 
-### Phase 2.5 — UI & Onboarding (Team 2 bonus) `[IN PROGRESS]`
+### Phase 2.5 — UI & Onboarding (Team 2 bonus) `[DONE]`
 **Who:** Team 2 (while Teams 1 & 3 finish Phase 2)
 **Files:** Create `MenuScene.js`, `GameOverScene.js`; modify `BootScene.js`, `GameScene.js` (countdown only), `config.js` (scene list), `index.html` (script tags)
 
@@ -564,6 +564,63 @@ Countdown (in GameScene):
 - Players visible but input disabled during countdown
 - "GO!" text fades out, gameplay begins
 - Use Phaser time events, not raw timers
+```
+
+---
+
+### Phase 2.75 — Chaos Wiring + Arena Variety + Branding (Team 2) `[NOT STARTED]`
+**Who:** Team 2 (while Teams 1 & 3 finish Phase 2 / early Phase 3)
+**Files:** Modify `GameScene.js`, `GravitySystem.js`, `BlackHole.js`, `config.js`, `SpriteFactory.js`, `MenuScene.js`
+
+#### Agent A — Chaos Event Wiring + Black Hole Eats Platforms
+Wire Team 2's chaos flags into Team 3's systems (both now on main).
+
+```
+FILES YOU OWN:
+- js/systems/GravitySystem.js (add gravitySurge check)
+- js/entities/BlackHole.js (add eventHorizonFlash check)
+- js/scenes/GameScene.js (add black hole ↔ platform overlap in setupColliders or create())
+
+Spec:
+- GravitySystem.updateGravity(delta): if scene.chaosSystem.isActive('gravitySurge'), double the pull force for that frame
+- BlackHole: if scene.chaosSystem.isActive('eventHorizonFlash'), temporarily double visual radius and kill zone for that frame
+- Add overlap check: when black hole overlaps a platform, call AP.PlatformCollapse.startCollapse(scene, plat) — the black hole eats platforms it touches
+- All changes must be additive — don't break existing gravity/blackhole behaviour
+```
+
+#### Agent B — Procedural Arena + Branding
+Make each match feel different and brand the game.
+
+```
+FILES YOU OWN:
+- js/config.js (randomise hole positions + platform layout per game load)
+- js/utils/SpriteFactory.js (procedural cyberpunk gothic background)
+- js/scenes/MenuScene.js (update title branding)
+
+Spec:
+Randomised Arena (config.js):
+- On each game load, randomise AP.HOLES positions:
+  - Always 2 holes in floor/ceiling, but randomise their x position (keep width ~0.12)
+  - Constrain: holes must be at least 0.25 apart, not at extreme edges (0.05-0.83 range)
+- Optionally shuffle platform y positions slightly (+/- 5% of game size) for variety
+- Keep the same number of platforms (9) and roughly the same layout zones
+
+Procedural Background (SpriteFactory.js):
+- Generate a cyberpunk gothic space station background using canvas:
+  - Dark base (#0a0a12) with subtle grid lines
+  - Random vertical/horizontal pipes and conduits (dim purple/blue, 1-3px wide)
+  - Scattered circuit-trace patterns (thin neon lines with 90° turns)
+  - Occasional panel edges / rivet dots
+  - Faint glow spots in magenta/cyan at random positions
+  - Overall feel: wrecked space station interior, dark and industrial
+- Generate as a Phaser texture in createTextures(), tile across arena in GameScene
+- Regenerate each game load so every match looks slightly different
+
+Branding (MenuScene.js):
+- Update game title to: "BOTFATHERS" as main title (large, neon magenta)
+- Subtitle: "GRAVITY WELL" (smaller, neon cyan)
+- Add tagline below: "A Cyberpunk Arena Brawl" (small, dim white)
+- Keep existing controls display and player count selector
 ```
 
 ---
@@ -638,6 +695,8 @@ Countdown (in GameScene):
 [2026-04-02] User — Added Phase 1.5: cyberpunk arena visual overhaul + Tone.js background music. Neon-edged platforms, industrial background, bright cyberpunk theme. Background track and ambient audio pulled forward from Phase 4.
 [2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
 [2026-04-02] Team 2 — Phase 2 complete (PR #2). Platform collapse + chaos events implemented. Vacuum Vent fixed to use delta-time. ChaosEventSystem uses flag-based isActive() API — no direct coupling to Phase 3 systems.
+[2026-04-02] Team 2 — Phase 2.5 complete (PR #4). MenuScene, GameOverScene, 3-2-1 countdown. Game flow: Boot → Menu → Game → GameOver → Menu.
+[2026-04-02] Team 2 — Phase 2.75 planned: wire chaos events into gravity/blackhole, procedural background generation, randomised hole/platform positions per match, rebrand to "BOTFATHERS".
 [2026-04-02] Team 1 — Phase 1.5: Used existing botfather WebP sprites (214x214 single frames) for player characters instead of generating new PNGs. Tinted per player, scaled to 48px. Arena textures procedurally generated via Phaser Graphics API. Removed stale AP.PLAYER_SIZE constant (replaced by AP.PLAYER_RENDER_SIZE).
 
 ---
