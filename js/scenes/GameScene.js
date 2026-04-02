@@ -84,6 +84,13 @@
         this.players.push(p);
       }
 
+      // Player-player overlap for stomp + knockback
+      for (var a = 0; a < this.players.length; a++) {
+        for (var b = a + 1; b < this.players.length; b++) {
+          this.physics.add.overlap(this.players[a], this.players[b], this._onPlayerCollision, null, this);
+        }
+      }
+
       // Keep backwards compat — this.player points to P1
       this.player = this.players[0];
 
@@ -171,6 +178,67 @@
           }
         });
       });
+    },
+
+    _onPlayerCollision: function (playerA, playerB) {
+      if (!playerA.active || !playerB.active) return;
+      if (playerA.isKnockbackActive() || playerB.isKnockbackActive()) return;
+
+      var STOMP_ZONE = 0.25; // top 25% of sprite = stomp zone
+      var KNOCKBACK_FORCE = 350;
+
+      // Check head stomp: is one player falling onto the other?
+      var aBottom = playerA.y + playerA.displayHeight / 2;
+      var bTop = playerB.y - playerB.displayHeight / 2;
+      var bBottom = playerB.y + playerB.displayHeight / 2;
+      var aTop = playerA.y - playerA.displayHeight / 2;
+
+      var stompThreshold = playerB.displayHeight * STOMP_ZONE;
+
+      // A stomps B (A is falling, A's feet near B's head)
+      if (playerA.body.velocity.y > 0 && aBottom >= bTop && aBottom <= bTop + stompThreshold) {
+        playerA.stompBounce();
+        if (typeof playerB.eliminate === 'function') {
+          playerB.eliminate();
+        } else {
+          playerB.setActive(false).setVisible(false);
+        }
+        return;
+      }
+
+      // B stomps A
+      if (playerB.body.velocity.y > 0 && bBottom >= aTop && bBottom <= aTop + stompThreshold) {
+        playerB.stompBounce();
+        if (typeof playerA.eliminate === 'function') {
+          playerA.eliminate();
+        } else {
+          playerA.setActive(false).setVisible(false);
+        }
+        return;
+      }
+
+      // Side bump — determine push direction
+      var dirA = (playerA.x < playerB.x) ? -1 : 1;
+      var dirB = -dirA;
+
+      var aMoving = Math.abs(playerA.body.velocity.x) > 20;
+      var bMoving = Math.abs(playerB.body.velocity.x) > 20;
+
+      if (aMoving && bMoving) {
+        // Both moving — both bounce apart
+        playerA.applyKnockback(dirA, KNOCKBACK_FORCE);
+        playerB.applyKnockback(dirB, KNOCKBACK_FORCE);
+      } else if (aMoving) {
+        // A moving, B still — B gets pushed
+        playerB.applyKnockback(dirB, KNOCKBACK_FORCE);
+      } else if (bMoving) {
+        // B moving, A still — A gets pushed
+        playerA.applyKnockback(dirA, KNOCKBACK_FORCE);
+      } else {
+        // Both still — gentle push apart
+        playerA.applyKnockback(dirA, KNOCKBACK_FORCE * 0.5);
+        playerB.applyKnockback(dirB, KNOCKBACK_FORCE * 0.5);
+      }
     },
 
     setupBlackHole: function () {

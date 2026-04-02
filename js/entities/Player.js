@@ -36,6 +36,7 @@
       );
 
       this.body.setCollideWorldBounds(false);
+      this._knockbackTimer = 0;
 
       // Apply player color tint
       var color = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
@@ -43,6 +44,11 @@
     },
 
     handleInput: function (keys, delta, holes, gameSize, boundaryThickness) {
+      // Decay knockback timer
+      if (this._knockbackTimer > 0) {
+        this._knockbackTimer -= delta;
+      }
+
       var moving = false;
 
       if (keys.left.isDown) {
@@ -99,6 +105,20 @@
           this.setTexture(TEXTURE_MAP[newState]);
         }
       }
+    },
+
+    applyKnockback: function (dirX, force) {
+      this.body.setVelocityX(dirX * force);
+      this.body.setVelocityY(-force * 0.4);
+      this._knockbackTimer = 300; // invulnerable for 0.3s
+    },
+
+    isKnockbackActive: function () {
+      return this._knockbackTimer > 0;
+    },
+
+    stompBounce: function () {
+      this.body.setVelocityY(AP.JUMP_VELOCITY * 0.7);
     },
 
     _checkVerticalWrap: function (holes, gameSize, boundaryThickness) {
