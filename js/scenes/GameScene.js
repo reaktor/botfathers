@@ -101,6 +101,9 @@
       // --- Gravity system (must come after black hole) ---
       this.setupGravity();
 
+      // --- Bullets + combat (Team 1 Coder A) ---
+      this.setupBullets();
+
       // --- Chaos event system (Team 2 Coder B) ---
       this.setupChaos();
 
@@ -284,6 +287,9 @@
       // Gravity after input so pull accumulates when idle
       this.updateGravity(delta);
 
+      // Bullets (Team 1 Coder A)
+      this.updateBullets(delta);
+
       this.updatePlatforms(delta);
       this.updateChaos(time, delta);
 
@@ -319,10 +325,69 @@
         }
       }
 
+      // Win condition check
       this.checkWinCondition();
     },
 
+    // --- Team 1 Coder A: Bullets + Combat ---
+
+    setupBullets: function () {
+      this.bulletGroup = AP.Bullet.createPool(this);
+
+      // Bullet-platform collider: destroy bullet on platform hit
+      this.physics.add.collider(this.bulletGroup, this.platforms, function (bullet) {
+        bullet.recycle();
+      });
+
+      // Bullet-player overlap: damage player, destroy bullet (no self-hits)
+      var playerTargets = this.players || (this.player ? [this.player] : []);
+
+      for (var i = 0; i < playerTargets.length; i++) {
+        this.physics.add.overlap(this.bulletGroup, playerTargets[i], function (bullet, player) {
+          // Skip self-hits and already-dead players
+          if (bullet.ownerIndex === player.playerIndex) return;
+          if (!player.alive || !player.active) return;
+          if (!bullet.active) return;
+
+          player.takeDamage(bullet.damage);
+          bullet.recycle();
+        });
+      }
+    },
+
+    updateBullets: function (delta) {
+      if (!this.bulletGroup) return;
+
+      var gameSize = AP.gameSize;
+      var controls = this.controls;
+      var bulletGroup = this.bulletGroup;
+
+      // Handle shooting input for all players
+      for (var i = 0; i < this.players.length; i++) {
+        var p = this.players[i];
+        if (p && p.alive && controls[i] && controls[i].shoot) {
+          if (Phaser.Input.Keyboard.JustDown(controls[i].shoot)) {
+            p.shoot(bulletGroup);
+          }
+        }
+      }
+
+      // Recycle off-screen bullets
+      var bullets = bulletGroup.getChildren();
+      for (var j = bullets.length - 1; j >= 0; j--) {
+        var b = bullets[j];
+        if (!b.active) continue;
+
+        if (b.x < -50 || b.x > gameSize + 50 ||
+            b.y < -50 || b.y > gameSize + 50) {
+          b.recycle();
+        }
+      }
+    },
+
     checkWinCondition: function () {
+      if (this._gameOver) return;
+
       var alive = [];
       for (var i = 0; i < this.players.length; i++) {
         if (this.players[i].active) {
@@ -339,6 +404,7 @@
         this.time.delayedCall(1000, function () {
           self.scene.start('GameOverScene', { winner: winner });
         });
+      }
       }
     },
 

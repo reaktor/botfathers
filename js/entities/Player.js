@@ -40,6 +40,11 @@
       // Apply player color tint
       var color = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
       this.setTint(color);
+
+      // Combat state
+      this.hp = 3;
+      this.alive = true;
+      this._lastFireTime = 0;
     },
 
     handleInput: function (keys, delta, holes, gameSize, boundaryThickness) {
@@ -124,6 +129,69 @@
         this.y = gameSize - boundaryThickness;
         this.body.setVelocityY(0);
       }
+    },
+
+    /**
+     * Fire a bullet from this player into the bullet pool.
+     * Respects cooldown (0.5s). Bullet spawns offset in facing direction.
+     * @param {Phaser.Physics.Arcade.Group} bulletGroup - the bullet pool
+     */
+    shoot: function (bulletGroup) {
+      if (!this.alive || !this.active) return;
+
+      var now = this.scene.time.now;
+      if (now - this._lastFireTime < AP.Bullet.COOLDOWN) return;
+
+      var bullet = bulletGroup.get();
+      if (!bullet) return; // pool exhausted
+
+      this._lastFireTime = now;
+
+      // Spawn bullet slightly in front of the player
+      var offsetX = this.facing * (AP.PLAYER_RENDER_SIZE * 0.6);
+      bullet.fire(this.x + offsetX, this.y, this.facing, this.playerIndex);
+    },
+
+    /**
+     * Deal damage to this player. Triggers eliminate() at 0 HP.
+     * @param {number} amount - damage to deal
+     */
+    takeDamage: function (amount) {
+      if (!this.alive) return;
+
+      this.hp -= amount;
+
+      // Brief flash to indicate hit
+      this.setAlpha(0.3);
+      var self = this;
+      this.scene.time.delayedCall(150, function () {
+        if (self.active) self.setAlpha(1);
+      });
+
+      if (this.hp <= 0) {
+        this.hp = 0;
+        this.eliminate();
+      }
+    },
+
+    /**
+     * Eliminate this player from the match (death).
+     * Disables physics body, hides sprite, marks as not alive.
+     */
+    eliminate: function () {
+      if (!this.alive) return;
+      this.alive = false;
+
+      // Visual death feedback — brief flash then hide
+      this.setTint(0xff0000);
+      var self = this;
+      this.scene.time.delayedCall(200, function () {
+        self.setActive(false);
+        self.setVisible(false);
+        if (self.body) {
+          self.body.enable = false;
+        }
+      });
     }
   });
 })();
