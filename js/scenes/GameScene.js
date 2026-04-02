@@ -12,6 +12,14 @@
 
     create: function () {
       var size = AP.gameSize;
+
+      // Reset state from previous round
+      this._gameOver = false;
+      this._countdownActive = false;
+
+      // Reset keyboard so keys don't stay "stuck" from the previous scene
+      this.input.keyboard.resetKeys();
+
       this.controls = AP.InputManager.create(this);
 
       // --- Tiled cyberpunk background ---
