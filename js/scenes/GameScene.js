@@ -196,6 +196,7 @@
 
     _onPlayerCollision: function (playerA, playerB) {
       if (!playerA.active || !playerB.active) return;
+      if (!playerA.alive || !playerB.alive) return;
       if (playerA.isKnockbackActive() || playerB.isKnockbackActive()) return;
 
       var STOMP_ZONE = 0.25; // top 25% of sprite = stomp zone
@@ -426,18 +427,18 @@
       });
 
       // Bullet-player overlap: damage player, destroy bullet (no self-hits)
-      var playerTargets = this.players || (this.player ? [this.player] : []);
+      var self = this;
+      for (var i = 0; i < this.players.length; i++) {
+        (function (player) {
+          self.physics.add.overlap(self.bulletGroup, player, function (bullet, pl) {
+            if (bullet.ownerIndex === pl.playerIndex) return;
+            if (!pl.alive || !pl.active) return;
+            if (!bullet.active) return;
 
-      for (var i = 0; i < playerTargets.length; i++) {
-        this.physics.add.overlap(this.bulletGroup, playerTargets[i], function (bullet, player) {
-          // Skip self-hits and already-dead players
-          if (bullet.ownerIndex === player.playerIndex) return;
-          if (!player.alive || !player.active) return;
-          if (!bullet.active) return;
-
-          player.takeDamage(bullet.damage);
-          bullet.recycle();
-        });
+            pl.takeDamage(bullet.damage);
+            bullet.recycle();
+          });
+        })(this.players[i]);
       }
     },
 
@@ -476,7 +477,7 @@
 
       var alive = [];
       for (var i = 0; i < this.players.length; i++) {
-        if (this.players[i].active) {
+        if (this.players[i].alive) {
           alive.push(i);
         }
       }
@@ -490,7 +491,6 @@
         this.time.delayedCall(1000, function () {
           self.scene.start('GameOverScene', { winner: winner });
         });
-      }
       }
     },
 
