@@ -36,6 +36,7 @@
       );
 
       this.body.setCollideWorldBounds(false);
+      this._knockbackTimer = 0;
 
       // Apply player color tint
       var color = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
@@ -43,16 +44,27 @@
     },
 
     handleInput: function (keys, delta, holes, gameSize, boundaryThickness) {
+      // Decay knockback timer
+      if (this._knockbackTimer > 0) {
+        this._knockbackTimer -= delta;
+      }
+
       var moving = false;
 
       if (keys.left.isDown) {
         this.body.setVelocityX(-AP.PLAYER_SPEED);
         this.facing = -1;
         moving = true;
+        if (this.body.blocked.down && AP.AudioManager && AP.AudioManager.playMove) {
+          AP.AudioManager.playMove();
+        }
       } else if (keys.right.isDown) {
         this.body.setVelocityX(AP.PLAYER_SPEED);
         this.facing = 1;
         moving = true;
+        if (this.body.blocked.down && AP.AudioManager && AP.AudioManager.playMove) {
+          AP.AudioManager.playMove();
+        }
       } else {
         // Apply drag instead of hard reset so gravity pull accumulates when idle
         this.body.velocity.x *= 0.85;
@@ -99,6 +111,23 @@
           this.setTexture(TEXTURE_MAP[newState]);
         }
       }
+    },
+
+    applyKnockback: function (dirX, force) {
+      this.body.setVelocityX(dirX * force);
+      // No vertical component — only push in the hit direction
+      this._knockbackTimer = 300; // invulnerable for 0.3s
+      if (AP.AudioManager && AP.AudioManager.playKnockback) {
+        AP.AudioManager.playKnockback();
+      }
+    },
+
+    isKnockbackActive: function () {
+      return this._knockbackTimer > 0;
+    },
+
+    stompBounce: function () {
+      this.body.setVelocityY(AP.JUMP_VELOCITY * 0.7);
     },
 
     _checkVerticalWrap: function (holes, gameSize, boundaryThickness) {

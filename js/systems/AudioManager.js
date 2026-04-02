@@ -5,6 +5,9 @@
   var muted = false;
   var masterVol = null;
   var jumpSynth = null;
+  var moveSynth = null;
+  var knockbackSynth = null;
+  var _moveLastTime = 0;
 
   AP.AudioManager = {
 
@@ -21,9 +24,15 @@
         // Master volume
         masterVol = new Tone.Volume(-8).toDestination();
 
-        AP.AudioManager._initBackground(masterVol);
-        AP.AudioManager._initAmbient(masterVol);
+        // Music bus — all background layers go through here so we can
+        // lower music independently of SFX
+        var musicBus = new Tone.Volume(-12).connect(masterVol);
+
+        AP.AudioManager._initBackground(musicBus);
+        AP.AudioManager._initAmbient(musicBus);
         AP.AudioManager._initJumpSFX(masterVol);
+        AP.AudioManager._initMoveSFX(masterVol);
+        AP.AudioManager._initKnockbackSFX(masterVol);
         AP.AudioManager._initMuteKey();
 
         Tone.Transport.bpm.value = 90;
@@ -38,7 +47,7 @@
         oscillator: { type: 'sawtooth' },
         filter: { type: 'lowpass', frequency: 200, Q: 2 },
         envelope: { attack: 0.1, decay: 0.3, sustain: 0.8, release: 0.5 }
-      }).connect(new Tone.Volume(-12).connect(output));
+      }).connect(new Tone.Volume(-20).connect(output));
 
       var bassNotes = ['C1', 'C1', 'Eb1', 'Eb1', 'Ab1', 'Ab1', 'Bb1', 'Bb1'];
       var bassIndex = 0;
@@ -51,7 +60,7 @@
       var arpSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'square' },
         envelope: { attack: 0.01, decay: 0.15, sustain: 0.2, release: 0.3 }
-      }).connect(new Tone.Volume(-18).connect(output));
+      }).connect(new Tone.Volume(-26).connect(output));
 
       var arpNotes = ['C4', 'Eb4', 'G4', 'Bb4', 'C5', 'Bb4', 'G4', 'Eb4'];
       var arpIndex = 0;
@@ -65,7 +74,7 @@
     _initAmbient: function (output) {
       var ambientNoise = new Tone.Noise('brown');
       var filter = new Tone.Filter(80, 'lowpass');
-      var vol = new Tone.Volume(-24);
+      var vol = new Tone.Volume(-30);
       ambientNoise.connect(filter);
       filter.connect(vol);
       vol.connect(output);
@@ -92,10 +101,42 @@
       });
     },
 
+    /** Soft footstep tick — rate-limited to every 150ms. */
+    _initMoveSFX: function (output) {
+      moveSynth = new Tone.NoiseSynth({
+        noise: { type: 'white' },
+        envelope: { attack: 0.002, decay: 0.04, sustain: 0, release: 0.01 }
+      }).connect(new Tone.Volume(-22).connect(output));
+    },
+
+    /** Punchy thud for knockback hits. */
+    _initKnockbackSFX: function (output) {
+      knockbackSynth = new Tone.MembraneSynth({
+        pitchDecay: 0.01,
+        octaves: 4,
+        envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.05 }
+      }).connect(new Tone.Volume(6).connect(output));
+    },
+
     /** Play jump sound effect. Called from Player.js on jump. */
     playJump: function () {
       if (!started || !jumpSynth) return;
       jumpSynth.triggerAttackRelease('C5', '32n');
+    },
+
+    /** Play footstep tick. Rate-limited so it doesn't spam. */
+    playMove: function () {
+      if (!started || !moveSynth) return;
+      var now = Tone.now();
+      if (now - _moveLastTime < 0.15) return;
+      _moveLastTime = now;
+      moveSynth.triggerAttackRelease('32n');
+    },
+
+    /** Play knockback hit sound. */
+    playKnockback: function () {
+      if (!started || !knockbackSynth) return;
+      knockbackSynth.triggerAttackRelease('C1', '16n');
     }
   };
 })();
