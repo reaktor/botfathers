@@ -26,7 +26,7 @@ project-root/
       GravitySystem.js          # Per-frame gravity pull on players + bullets
       ChaosEventSystem.js       # Random events every ~20s
       PowerupSpawner.js         # Timed random powerup spawning
-      AudioManager.js           # Web Audio API procedural sounds
+      AudioManager.js           # Tone.js synth engine — retro cyberpunk sound design
     scenes/
       BootScene.js              # Asset generation, preload
       MenuScene.js              # Title screen, player count select
@@ -106,7 +106,7 @@ All files use `window.AP` global namespace. No modules, no bundler, works with `
 - Death particle explosions, camera shake on elimination
 - Starfield parallax background, black hole particle swirl
 - Game over screen showing winner, restart without reload
-- Optional: procedural audio via Web Audio API
+- **Audio (Tone.js):** Retro cyberpunk synth sound design — square wave laser shots, bitcrushed hit impacts, low rumble black hole drone, distorted death explosion, synthwave powerup chimes, pulsing background track
 - **Testable:** Complete game experience end to end
 
 ---
@@ -130,6 +130,7 @@ Chaos events and polish are done together at the end.
 - **Procedural sprites** — no image assets, everything generated via `Graphics + generateTexture()`
 - **Global namespace** (`window.AP`) — no ES modules to keep `file://` compatibility
 - **Bullet pooling** via Phaser's Arcade Group for performance
+- **Audio: Tone.js via CDN** — retro cyberpunk synth sound design. Square/pulse oscillators + bitcrusher + distortion for gritty chiptune-meets-synthwave vibe. CDN: `https://cdn.jsdelivr.net/npm/tone/build/Tone.min.js`
 
 ---
 
@@ -146,7 +147,7 @@ Chaos events and polish are done together at the end.
 > When something changes from the original plan, log it here. Keep entries short.
 > Format: `[DATE] [WHO] — What changed and why`
 
-_No decisions yet._
+[2026-04-02] Johan — Using Tone.js via CDN for audio instead of raw Web Audio API. Going for retro cyberpunk/synthwave sound. Gritty square waves, bitcrusher, distortion filters.
 
 <!-- Example entries:
 [2026-04-02] Johan — Switched from inverse-square to linear gravity falloff, felt more fun in playtesting
