@@ -20,7 +20,12 @@
     var success = false;
 
     function onLoad(asset, img) {
-      scene.textures.addImage(asset.key, img);
+      // Draw to canvas to strip cross-origin taint (required for WebGL on file://)
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      scene.textures.addCanvas(asset.key, canvas);
       loaded++;
       if (loaded === total) {
         success = true;
