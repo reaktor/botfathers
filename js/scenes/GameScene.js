@@ -426,20 +426,8 @@
         bullet.recycle();
       });
 
-      // Bullet-player overlap: damage player, destroy bullet (no self-hits)
-      var self = this;
-      for (var i = 0; i < this.players.length; i++) {
-        (function (player) {
-          self.physics.add.overlap(self.bulletGroup, player, function (bullet, pl) {
-            if (bullet.ownerIndex === pl.playerIndex) return;
-            if (!pl.alive || !pl.active) return;
-            if (!bullet.active) return;
-
-            pl.takeDamage(bullet.damage);
-            bullet.recycle();
-          });
-        })(this.players[i]);
-      }
+      // Bullet-player hits are checked manually in updateBullets()
+      // because Phaser overlap with pooled groups can miss detections.
     },
 
     updateBullets: function (delta) {
@@ -459,12 +447,31 @@
         }
       }
 
-      // Recycle off-screen bullets
+      // Manual bullet-player hit detection
       var bullets = bulletGroup.getChildren();
       for (var j = bullets.length - 1; j >= 0; j--) {
         var b = bullets[j];
         if (!b.active) continue;
 
+        // Check hit against each player
+        for (var k = 0; k < this.players.length; k++) {
+          var target = this.players[k];
+          if (!target.alive || !target.active) continue;
+          if (b.ownerIndex === target.playerIndex) continue;
+
+          var dx = b.x - target.x;
+          var dy = b.y - target.y;
+          var hitDist = AP.PLAYER_RENDER_SIZE * 0.4;
+          if (dx * dx + dy * dy < hitDist * hitDist) {
+            target.takeDamage(b.damage);
+            b.recycle();
+            break;
+          }
+        }
+
+        if (!b.active) continue;
+
+        // Recycle off-screen bullets
         if (b.x < -50 || b.x > gameSize + 50 ||
             b.y < -50 || b.y > gameSize + 50) {
           b.recycle();
