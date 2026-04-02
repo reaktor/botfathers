@@ -56,27 +56,42 @@
       this._animImg = null;
       this._animState = '';
       if (ANIM_MAP.idle) {
+        // Convert hex color to CSS filter hue-rotate + saturate
+        var hexColor = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
+        var r = (hexColor >> 16) & 0xff;
+        var g = (hexColor >> 8) & 0xff;
+        var b = hexColor & 0xff;
+        // Build a CSS tint overlay using a wrapper div
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:absolute;pointer-events:none;';
         var img = document.createElement('img');
         img.src = ANIM_MAP.idle;
-        img.style.cssText = 'position:absolute;pointer-events:none;image-rendering:pixelated;transform-origin:center;';
-        document.body.appendChild(img);
+        img.style.cssText = 'width:100%;height:100%;image-rendering:pixelated;display:block;';
+        // Color overlay canvas for tinting
+        var tintCanvas = document.createElement('canvas');
+        tintCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:multiply;';
+        wrapper.appendChild(img);
+        wrapper.appendChild(tintCanvas);
+        document.body.appendChild(wrapper);
         this._animImg = img;
+        this._animWrapper = wrapper;
+        this._animTintCanvas = tintCanvas;
+        this._animTintColor = 'rgb(' + r + ',' + g + ',' + b + ')';
         this._animState = 'idle';
-        // Hide the Phaser sprite since DOM img replaces it
         this.setAlpha(0);
       }
     },
 
     /** Sync DOM img position/size/flip to match the Phaser sprite each frame. */
     syncAnimImg: function () {
-      var img = this._animImg;
-      if (!img) return;
+      var wrap = this._animWrapper;
+      if (!wrap) return;
 
       if (!this.active || !this.visible) {
-        img.style.display = 'none';
+        wrap.style.display = 'none';
         return;
       }
-      img.style.display = '';
+      wrap.style.display = '';
 
       var canvas = this.scene.game.canvas;
       var rect = canvas.getBoundingClientRect();
@@ -90,26 +105,38 @@
       var screenX = rect.left + (this.x - this.displayWidth / 2) * sx;
       var screenY = rect.top + (this.y - this.displayHeight / 2) * sy;
 
-      img.style.width = dispW + 'px';
-      img.style.height = dispH + 'px';
-      img.style.left = screenX + 'px';
-      img.style.top = screenY + 'px';
-      img.style.transform = this.facing === -1 ? 'scaleX(-1)' : '';
+      wrap.style.width = dispW + 'px';
+      wrap.style.height = dispH + 'px';
+      wrap.style.left = screenX + 'px';
+      wrap.style.top = screenY + 'px';
+      wrap.style.transform = this.facing === -1 ? 'scaleX(-1)' : '';
+
+      // Draw tint overlay on the canvas
+      var tc = this._animTintCanvas;
+      if (tc && (tc.width !== Math.round(dispW) || tc.height !== Math.round(dispH))) {
+        tc.width = Math.round(dispW);
+        tc.height = Math.round(dispH);
+        var ctx = tc.getContext('2d');
+        ctx.fillStyle = this._animTintColor;
+        ctx.fillRect(0, 0, tc.width, tc.height);
+      }
 
       // Switch animated WebP source on state change
       var src = ANIM_MAP[this.currentState];
       if (src && this._animState !== this.currentState) {
         this._animState = this.currentState;
-        img.src = src;
+        this._animImg.src = src;
       }
     },
 
-    /** Remove DOM img on destroy. */
+    /** Remove DOM elements on destroy. */
     removeAnimImg: function () {
-      if (this._animImg && this._animImg.parentNode) {
-        this._animImg.parentNode.removeChild(this._animImg);
-        this._animImg = null;
+      if (this._animWrapper && this._animWrapper.parentNode) {
+        this._animWrapper.parentNode.removeChild(this._animWrapper);
       }
+      this._animWrapper = null;
+      this._animImg = null;
+      this._animTintCanvas = null;
     },
 
     handleInput: function (keys, delta, holes, gameSize, boundaryThickness) {
