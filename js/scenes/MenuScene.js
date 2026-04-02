@@ -149,10 +149,10 @@
 
       var playerColors = [NEON_CYAN, NEON_MAGENTA, '#00ff66', '#ff8800'];
       var controlSchemes = [
-        { label: 'P1', keys: 'WASD + Space', color: playerColors[0] },
-        { label: 'P2', keys: 'Arrows + Enter', color: playerColors[1] },
-        { label: 'P3', keys: 'IJKL + H', color: playerColors[2] },
-        { label: 'P4', keys: 'Numpad 8456 + 0', color: playerColors[3] }
+        { label: 'P1', keys: 'A/D/W + F', color: playerColors[0] },
+        { label: 'P2', keys: 'Arrows + Space', color: playerColors[1] },
+        { label: 'P3', keys: 'J/L/I + H', color: playerColors[2] },
+        { label: 'P4', keys: 'Numpad 4/6/8 + 0', color: playerColors[3] }
       ];
 
       for (var i = 0; i < controlSchemes.length; i++) {
@@ -326,7 +326,7 @@
         { head: 'BLACK HOLE', body: 'Center of the arena. Pulls everything in.\nContact = instant death. It grows over time.' },
         { head: 'PLATFORMS', body: 'They collapse! Outer ones go first (~20s in).\nThe black hole eats platforms it touches.' },
         { head: 'CHAOS EVENTS', body: 'Every ~20s a random event hits:\n- Gravity Surge: double pull for 4s\n- Blackout: lights out for 3s\n- Meteor Strike: destroys a platform\n- Event Horizon Flash: black hole doubles size\n- Vacuum Vent: wind pushes everyone' },
-        { head: 'CONTROLS', body: 'P1: WASD + Space  |  P2: Arrows + Enter\nP3: IJKL + H      |  P4: Numpad 8456 + 0' }
+        { head: 'CONTROLS', body: 'P1: A/D/W + F     |  P2: Arrows + Space\nP3: J/L/I + H     |  P4: Numpad 4/6/8 + 0' }
       ];
 
       for (var ri = 0; ri < rules.length; ri++) {
