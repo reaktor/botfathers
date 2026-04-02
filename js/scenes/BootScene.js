@@ -1,52 +1,37 @@
 (function () {
   'use strict';
 
-  var BOTFATHER_ASSETS = [
-    { key: 'botfather-idle',   src: 'assets/botfather/character_idle.webp' },
-    { key: 'botfather-run',    src: 'assets/botfather/character_front_run_run.webp' },
-    { key: 'botfather-jump',   src: 'assets/botfather/character_jump.webp' },
-    { key: 'botfather-attack', src: 'assets/botfather/character_attack.webp' },
-    { key: 'botfather-hurt',   src: 'assets/botfather/character_hurt.webp' },
-    { key: 'botfather-death',  src: 'assets/botfather/character_death.webp' }
-  ];
+  var BOTFATHER_KEYS = ['idle', 'run', 'jump', 'attack', 'hurt', 'death'];
 
   /**
-   * Load images via DOM <img> elements (works with file:// protocol)
-   * then add them to Phaser's texture manager.
+   * Load images from base64 data URIs (works with file:// and http://).
+   * Data lives in AP.BOTFATHER_DATA, set by js/data/botfather-sprites.js.
    */
-  function loadImagesViaDom(scene, assets, callback) {
+  function loadSpritesFromData(scene, callback) {
+    var data = AP.BOTFATHER_DATA;
+    if (!data) { callback(false); return; }
+
     var loaded = 0;
-    var total = assets.length;
-    var success = false;
+    var total = BOTFATHER_KEYS.length;
 
-    function onLoad(asset, img) {
-      // Draw to canvas to strip cross-origin taint (required for WebGL on file://)
-      var canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      scene.textures.addCanvas(asset.key, canvas);
-      loaded++;
-      if (loaded === total) {
-        success = true;
-        callback(true);
-      }
-    }
+    for (var i = 0; i < total; i++) {
+      var key = BOTFATHER_KEYS[i];
+      var src = data[key];
+      if (!src) { loaded++; continue; }
 
-    function onError() {
-      loaded++;
-      if (loaded === total) {
-        callback(success);
-      }
-    }
-
-    for (var i = 0; i < assets.length; i++) {
       var img = new Image();
-      img.onload = (function (asset, imgRef) {
-        return function () { onLoad(asset, imgRef); };
-      })(assets[i], img);
-      img.onerror = onError;
-      img.src = assets[i].src;
+      img.onload = (function (k, imgRef) {
+        return function () {
+          scene.textures.addImage('botfather-' + k, imgRef);
+          loaded++;
+          if (loaded === total) callback(true);
+        };
+      })(key, img);
+      img.onerror = function () {
+        loaded++;
+        if (loaded === total) callback(false);
+      };
+      img.src = src;
     }
   }
 
@@ -60,7 +45,7 @@
     create: function () {
       var scene = this;
 
-      loadImagesViaDom(scene, BOTFATHER_ASSETS, function (allLoaded) {
+      loadSpritesFromData(scene, function (allLoaded) {
         AP.botfatherLoaded = allLoaded;
 
         // Generate procedural textures (arena, fallback player)
