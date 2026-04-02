@@ -253,6 +253,10 @@
       if (!this.alive) return;
       this.alive = false;
 
+      if (AP.AudioManager && AP.AudioManager.playDeath) {
+        AP.AudioManager.playDeath();
+      }
+
       // Drop held powerup before dying
       if (typeof this.dropPowerup === 'function') {
         var dropped = this.dropPowerup();
