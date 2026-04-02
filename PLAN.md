@@ -47,6 +47,8 @@ All files use `window.AP` global namespace. No modules, no bundler, works with `
 - One player (P1) moving and jumping on hardcoded platforms
 - Procedural sprites via `Graphics.generateTexture()`
 - Basic gravity (Phaser's `arcade.gravity.y = 300`)
+- Game is supposed to be full screen (square with full height)
+- If the character reaches either the left or right boundary, it should reappear on the opposite side—this is commonly known as horizontal screen wrapping.
 - **Testable:** Open `index.html`, one colored rectangle moves/jumps on platforms
 
 ### Milestone 2 — Multiplayer Input + Arena `[NOT STARTED]`
