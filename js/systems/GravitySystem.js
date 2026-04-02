@@ -4,7 +4,7 @@
   // Gravity constants
   var DEFAULT_PULL_STRENGTH = 800000; // base pull strength for inverse-square calc
   var MIN_DISTANCE = 30;              // clamp min distance to avoid physics explosions
-  var MAX_FORCE = 400;                // cap force magnitude per frame
+  var MAX_FORCE = 2000;               // cap force magnitude per frame
 
   /**
    * GravitySystem — applies inverse-square gravitational pull toward the black hole

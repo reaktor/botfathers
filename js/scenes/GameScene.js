@@ -99,8 +99,6 @@
     },
 
     update: function (time, delta) {
-      this.updateGravity(delta);
-
       if (this.player && this.player.active) {
         this.player.handleInput(
           this.controls[0],
@@ -110,6 +108,9 @@
           this.boundaryThickness
         );
       }
+
+      // Gravity applied after input so it adds to player velocity instead of being overwritten
+      this.updateGravity(delta);
 
       // Update black hole (drift, grow, redraw)
       if (this.blackHole) {
