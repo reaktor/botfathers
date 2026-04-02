@@ -5,9 +5,9 @@
   window.AP = window.AP || {};
 
   // Constants
-  AP.GRAVITY = 300;
+  AP.GRAVITY = 600;
   AP.PLAYER_SPEED = 200;
-  AP.JUMP_VELOCITY = -350;
+  AP.JUMP_VELOCITY = -500;
   AP.PLATFORM_HEIGHT = 16;
 
   AP.PLAYER_RENDER_SIZE = 48;
