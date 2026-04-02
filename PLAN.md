@@ -288,7 +288,7 @@ Do NOT modify any files. Report findings to the human dev.
 
 ---
 
-### Team 3 (Johan) — Black Hole + Gravity
+### Team 3 — Black Hole + Gravity
 
 #### Team 3 Coder A — Black Hole
 ```
@@ -349,7 +349,7 @@ Spec:
 Commit when done. Update PLAN.md decisions log if you deviate.
 ```
 
-#### Team 3 Manager (Johan) — Review
+#### Team 3 Manager — Review
 ```
 Read PLAN.md and docs/gameplay.md first. You are Team 3 Manager.
 
@@ -460,10 +460,21 @@ update(time, delta) {
 | Team | Coder A | Coder B | Manager |
 |------|---------|---------|---------|
 | Team 1 | Bullets + combat | Powerups | Reviews both |
-| Team 2 | Platform collapse | Chaos events | Reviews both |
-| Team 3 (Johan) | Black hole entity | Gravity system | Reviews both |
+| **Team 2** | **Platform collapse ✅** | **Chaos events ✅** | **Reviewed ✅** |
+| Team 3 | Black hole entity | Gravity system | Reviews both |
 
 All coders work in parallel. Managers review after coders commit.
+
+#### Team 2 — DONE (PR #2)
+**Platform Collapse** (`js/entities/Platform.js`):
+- `AP.PlatformCollapse.startCollapse(scene, plat)` — 2s warning flash then collapse
+- `AP.PlatformCollapse.getActivePlatforms(platformGroup)` — returns non-collapsed platforms
+- Priority tiers: outer (tier 1) → mid (tier 2) → central (tier 3). Staggered from ~20s, every 8s.
+
+**Chaos Events** (`js/systems/ChaosEventSystem.js`):
+- Instance: `scene.chaosSystem` — call `chaosSystem.isActive(eventName)` to check flags
+- Events: `gravitySurge` (4s flag), `blackout` (3s overlay depth 900), `meteorStrike` (instant, calls startCollapse), `eventHorizonFlash` (2s flag), `vacuumVent` (3s directional force)
+- Phase 3 wiring: GravitySystem checks `isActive('gravitySurge')`, BlackHole checks `isActive('eventHorizonFlash')`
 
 ---
 
@@ -482,16 +493,66 @@ All coders work in parallel. Managers review after coders commit.
 
 ---
 
+### Phase 2.5 — UI & Onboarding (Team 2 bonus) `[IN PROGRESS]`
+**Who:** Team 2 (while Teams 1 & 3 finish Phase 2)
+**Files:** Create `MenuScene.js`, `GameOverScene.js`; modify `BootScene.js`, `GameScene.js` (countdown only), `config.js` (scene list), `index.html` (script tags)
+
+#### Agent A — MenuScene (title + controls + player count)
+```
+FILES YOU OWN:
+- js/scenes/MenuScene.js (CREATE)
+- js/scenes/BootScene.js (modify: go to MenuScene instead of GameScene)
+- index.html (add MenuScene.js script tag)
+- js/config.js (add MenuScene to scene list)
+
+Spec:
+- Cyberpunk-styled title screen: "ASTEROID PANIC: GRAVITY WELL" in neon text
+- Controls display showing all 4 player control schemes:
+  - P1: WASD + Space (shoot)
+  - P2: Arrow keys + Enter (shoot)
+  - P3: IJKL + H (shoot)
+  - P4: Numpad 8456 + 0 (shoot)
+- Player count selector (2-4 players), default 4
+- "PRESS ENTER TO START" prompt (pulses/blinks)
+- Pass selected player count to GameScene via scene data: this.scene.start('GameScene', { playerCount: n })
+- Dark background (#0a0a1a), monospace font, neon magenta/cyan colors
+- BootScene should go to MenuScene instead of GameScene
+```
+
+#### Agent B — GameOverScene + Countdown
+```
+FILES YOU OWN:
+- js/scenes/GameOverScene.js (CREATE)
+- js/scenes/GameScene.js (ONLY add countdown logic at start of create())
+- index.html (add GameOverScene.js script tag)
+- js/config.js (add GameOverScene to scene list)
+
+Spec:
+GameOverScene:
+- Receives winner data: this.scene.start('GameOverScene', { winner: playerIndex })
+- Display "PLAYER N WINS" in winner's neon color
+- Show final stats if available (kills, survival time)
+- "PRESS ENTER TO RESTART" → goes back to MenuScene
+- Cyberpunk styling matching MenuScene
+
+Countdown (in GameScene):
+- 3-2-1-GO! countdown at start of match before gameplay begins
+- Large centered text, each number holds for 1s
+- Players visible but input disabled during countdown
+- "GO!" text fades out, gameplay begins
+- Use Phaser time events, not raw timers
+```
+
+---
+
 ### Phase 4 — Polish `[NOT STARTED]`
 **Who:** Split freely, no file conflicts
 
 | Task | Files |
 |------|-------|
-| Menu + Game Over screens | `MenuScene.js`, `GameOverScene.js` |
 | HUD (HP, powerup, black hole size) | HUD methods in `GameScene.js` |
 | Audio (Tone.js cyberpunk synth) | `AudioManager.js` |
 | Particles + visual effects | `SpriteFactory.js`, `GameScene.js` |
-| 3-2-1 countdown | `GameScene.js` |
 
 **Audio palette (Tone.js) — gameplay SFX** (background track + ambient already in Phase 1.5):
 - Square wave laser shots, bitcrushed hit impacts
@@ -553,6 +614,7 @@ All coders work in parallel. Managers review after coders commit.
 [2026-04-02] Johan — Restructured for 3 devs with squad model (2 coders + 1 manager per team). 9 agents total in Phase 2.
 [2026-04-02] User — Added Phase 1.5: cyberpunk arena visual overhaul + Tone.js background music. Neon-edged platforms, industrial background, bright cyberpunk theme. Background track and ambient audio pulled forward from Phase 4.
 [2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
+[2026-04-02] Team 2 — Phase 2 complete (PR #2). Platform collapse + chaos events implemented. Vacuum Vent fixed to use delta-time. ChaosEventSystem uses flag-based isActive() API — no direct coupling to Phase 3 systems.
 [2026-04-02] Team 1 — Phase 1.5: Used existing botfather WebP sprites (214x214 single frames) for player characters instead of generating new PNGs. Tinted per player, scaled to 48px. Arena textures procedurally generated via Phaser Graphics API. Removed stale AP.PLAYER_SIZE constant (replaced by AP.PLAYER_RENDER_SIZE).
 
 ---

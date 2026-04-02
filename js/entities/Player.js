@@ -54,7 +54,8 @@
         this.facing = 1;
         moving = true;
       } else {
-        this.body.setVelocityX(0);
+        // Apply drag instead of hard reset so gravity pull accumulates when idle
+        this.body.velocity.x *= 0.85;
       }
 
       if (keys.jump.isDown && this.body.blocked.down) {

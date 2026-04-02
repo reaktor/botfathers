@@ -51,7 +51,7 @@
         // Generate procedural textures (arena, fallback player)
         AP.SpriteFactory.createTextures(scene);
 
-        scene.scene.start('GameScene');
+        scene.scene.start('MenuScene');
       });
     }
   });

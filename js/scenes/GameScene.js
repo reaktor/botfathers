@@ -28,6 +28,7 @@
       this._buildHoleWarnings(size, BOUNDARY_THICKNESS);
 
       // --- Platforms from config ---
+      this._platformSprites = [];
       for (var i = 0; i < AP.PLATFORMS.length; i++) {
         var p = AP.PLATFORMS[i];
         var pw = p.width * size;
@@ -36,7 +37,23 @@
         var plat = this.platforms.create(px, py, 'platform');
         plat.setDisplaySize(pw, AP.PLATFORM_HEIGHT);
         plat.refreshBody();
+        // Initialise collapse state (Team 2 Coder A)
+        AP.PlatformCollapse.initCollapseState(plat, i);
+        this._platformSprites.push(plat);
       }
+
+      // --- Platform collapse system state (Team 2 Coder A) ---
+      this._matchTime = 0;
+      this._collapseQueue = this._buildCollapseQueue();
+      this._nextCollapseIndex = 0;
+      this._nextCollapseTime = AP.PlatformCollapse.FIRST_COLLAPSE_DELAY;
+
+      // Expose getActivePlatforms for ChaosEventSystem (Team 2 Coder B)
+      var platformGroup = this.platforms;
+      AP.ChaosEventSystem = AP.ChaosEventSystem || {};
+      AP.ChaosEventSystem.getActivePlatforms = function () {
+        return AP.PlatformCollapse.getActivePlatforms(platformGroup);
+      };
 
       // --- Player ---
       this.player = new AP.Player(this, size * 0.5, size * 0.7, 0);
@@ -52,17 +69,106 @@
       this.input.once('pointerdown', this._startAudio, this);
       this.input.keyboard.once('keydown', this._startAudio, this);
 
-      // --- Phase 2 hookpoint stubs ---
-      // this.setupBlackHole();
-      // this.setupGravity();
-      // this.setupBullets();
-      // this.setupPowerups();
-      // this.setupChaos();
-      // this.setupColliders();
+      // --- Black Hole ---
+      this.setupBlackHole();
+
+      // --- Gravity system (must come after black hole) ---
+      this.setupGravity();
+
+      // --- Chaos event system (Team 2 Coder B) ---
+      this.setupChaos();
+
+      // --- Countdown before gameplay begins (Team 2 Agent B — Phase 2.5) ---
+      this._startCountdown();
     },
 
     _buildBackground: function (size) {
       this.add.tileSprite(size / 2, size / 2, size, size, 'bg-panels');
+    },
+
+    /**
+     * _startCountdown() — 3-2-1-GO! countdown at match start.
+     * Pauses physics during countdown, resumes after "GO!" fades.
+     * Uses Phaser time events (this.time.delayedCall).
+     */
+    _startCountdown: function () {
+      var self = this;
+      var size = AP.gameSize;
+      var cx = size / 2;
+      var cy = size / 2;
+
+      // Pause physics so players are visible but frozen
+      this.physics.pause();
+
+      // Track whether countdown is active (other systems can check this)
+      this._countdownActive = true;
+
+      // Create countdown text — large, centered, monospace, neon cyan
+      var countdownText = this.add.text(cx, cy, '3', {
+        fontFamily: '"Courier New", Courier, monospace',
+        fontSize: Math.floor(size * 0.2) + 'px',
+        color: '#00ffff',
+        fontStyle: 'bold',
+        align: 'center'
+      });
+      countdownText.setOrigin(0.5);
+      countdownText.setDepth(1000);
+
+      // "3" shows for 1 second, then "2"
+      this.time.delayedCall(1000, function () {
+        countdownText.setText('2');
+        countdownText.setColor('#ff00ff');
+      });
+
+      // "2" shows for 1 second, then "1"
+      this.time.delayedCall(2000, function () {
+        countdownText.setText('1');
+        countdownText.setColor('#ff8800');
+      });
+
+      // "1" shows for 1 second, then "GO!"
+      this.time.delayedCall(3000, function () {
+        countdownText.setText('GO!');
+        countdownText.setColor('#00ff66');
+        countdownText.setFontSize(Math.floor(size * 0.18) + 'px');
+
+        // "GO!" fades out over 0.5s, then resume gameplay
+        self.tweens.add({
+          targets: countdownText,
+          alpha: 0,
+          duration: 500,
+          ease: 'Power2',
+          onComplete: function () {
+            countdownText.destroy();
+            self._countdownActive = false;
+            self.physics.resume();
+          }
+        });
+      });
+    },
+
+    setupBlackHole: function () {
+      var size = AP.gameSize;
+      this.blackHole = new AP.BlackHole(this, size * 0.5, size * 0.5);
+      AP.blackHoleInstance = this.blackHole;
+    },
+
+    setupGravity: function () {
+      AP.GravitySystem.reset();
+
+      if (this.player) {
+        AP.GravitySystem.addBody(this.player);
+      }
+
+      if (this.players) {
+        for (var i = 0; i < this.players.length; i++) {
+          AP.GravitySystem.addBody(this.players[i]);
+        }
+      }
+    },
+
+    updateGravity: function (delta) {
+      AP.GravitySystem.update(delta);
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -137,6 +243,9 @@
     },
 
     update: function (time, delta) {
+      // Skip all gameplay logic while countdown is active (Phase 2.5)
+      if (this._countdownActive) return;
+
       if (this.player && this.player.active) {
         this.player.handleInput(
           this.controls[0],
@@ -147,13 +256,90 @@
         );
       }
 
-      // --- Phase 2 hookpoint stubs ---
-      // this.updateGravity(delta);
-      // this.updateBullets(delta);
-      // this.updatePowerups(delta);
-      // this.updatePlatforms(delta);
-      // this.updateChaos(time);
-      // this.checkWinCondition();
+      // Gravity after input so pull accumulates when idle
+      this.updateGravity(delta);
+
+      this.updatePlatforms(delta);
+      this.updateChaos(time, delta);
+
+      // Update black hole (drift, grow, redraw)
+      if (this.blackHole) {
+        this.blackHole.update(time, delta);
+
+        // Kill zone check — instant death on contact
+        if (this.player && this.player.active &&
+            this.blackHole.isInKillZone(this.player.x, this.player.y)) {
+          if (typeof this.player.eliminate === 'function') {
+            this.player.eliminate();
+          } else {
+            this.player.setActive(false).setVisible(false);
+          }
+        }
+      }
+    },
+
+    // --- Team 2 Coder B: Chaos events ---
+
+    setupChaos: function () {
+      this.chaosSystem = new AP.ChaosEventSystem(this);
+    },
+
+    updateChaos: function (time, delta) {
+      if (this.chaosSystem) {
+        this.chaosSystem.update(time, delta);
+      }
+    },
+
+    // --- Team 2 Coder A: Platform collapse ---
+
+    _buildCollapseQueue: function () {
+      var sprites = this._platformSprites.slice();
+
+      for (var i = sprites.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = sprites[i];
+        sprites[i] = sprites[j];
+        sprites[j] = tmp;
+      }
+
+      sprites.sort(function (a, b) {
+        return a._collapsePriority - b._collapsePriority;
+      });
+
+      return sprites;
+    },
+
+    updatePlatforms: function (delta) {
+      this._matchTime += delta;
+
+      if (this._nextCollapseIndex < this._collapseQueue.length &&
+          this._matchTime >= this._nextCollapseTime) {
+
+        var target = this._collapseQueue[this._nextCollapseIndex];
+        if (target._collapseState === 'stable') {
+          AP.PlatformCollapse.startCollapse(this, target);
+        }
+        this._nextCollapseIndex++;
+        this._nextCollapseTime += AP.PlatformCollapse.COLLAPSE_STAGGER_INTERVAL;
+      }
+
+      var children = this._platformSprites;
+      for (var i = 0; i < children.length; i++) {
+        var p = children[i];
+        if (p._collapseState === 'warning') {
+          p._collapseTimer += delta;
+          p._flashTimer += delta;
+
+          if (p._flashTimer >= AP.PlatformCollapse.COLLAPSE_FLASH_INTERVAL) {
+            p._flashTimer -= 150;
+            p.setAlpha(p.alpha < 1 ? 1 : 0.2);
+          }
+
+          if (p._collapseTimer >= AP.PlatformCollapse.COLLAPSE_WARNING_DURATION) {
+            AP.PlatformCollapse.collapse(p);
+          }
+        }
+      }
     }
   });
 })();
