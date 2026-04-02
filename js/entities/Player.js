@@ -23,15 +23,16 @@
       this.facing = 1; // 1 = right, -1 = left
       this.currentState = 'idle';
 
-      // Scale from 214px to PLAYER_RENDER_SIZE
-      var scale = AP.PLAYER_RENDER_SIZE / 214;
+      // Scale to PLAYER_RENDER_SIZE — source size depends on texture
+      var texSize = AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE;
+      var scale = AP.PLAYER_RENDER_SIZE / texSize;
       this.setScale(scale);
 
       // Physics hitbox — smaller than visual
       this.body.setSize(AP.PLAYER_HITBOX_W / scale, AP.PLAYER_HITBOX_H / scale);
       this.body.setOffset(
-        (214 - AP.PLAYER_HITBOX_W / scale) / 2,
-        (214 - AP.PLAYER_HITBOX_H / scale)
+        (texSize - AP.PLAYER_HITBOX_W / scale) / 2,
+        (texSize - AP.PLAYER_HITBOX_H / scale)
       );
 
       this.body.setCollideWorldBounds(false);
