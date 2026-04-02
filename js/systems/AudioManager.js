@@ -22,10 +22,14 @@
 
       Tone.start().then(function () {
         // Master volume
-        masterVol = new Tone.Volume(-14).toDestination();
+        masterVol = new Tone.Volume(-8).toDestination();
 
-        AP.AudioManager._initBackground(masterVol);
-        AP.AudioManager._initAmbient(masterVol);
+        // Music bus — all background layers go through here so we can
+        // lower music independently of SFX
+        var musicBus = new Tone.Volume(-12).connect(masterVol);
+
+        AP.AudioManager._initBackground(musicBus);
+        AP.AudioManager._initAmbient(musicBus);
         AP.AudioManager._initJumpSFX(masterVol);
         AP.AudioManager._initMoveSFX(masterVol);
         AP.AudioManager._initKnockbackSFX(masterVol);
@@ -43,7 +47,7 @@
         oscillator: { type: 'sawtooth' },
         filter: { type: 'lowpass', frequency: 200, Q: 2 },
         envelope: { attack: 0.1, decay: 0.3, sustain: 0.8, release: 0.5 }
-      }).connect(new Tone.Volume(-12).connect(output));
+      }).connect(new Tone.Volume(-20).connect(output));
 
       var bassNotes = ['C1', 'C1', 'Eb1', 'Eb1', 'Ab1', 'Ab1', 'Bb1', 'Bb1'];
       var bassIndex = 0;
@@ -56,7 +60,7 @@
       var arpSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'square' },
         envelope: { attack: 0.01, decay: 0.15, sustain: 0.2, release: 0.3 }
-      }).connect(new Tone.Volume(-18).connect(output));
+      }).connect(new Tone.Volume(-26).connect(output));
 
       var arpNotes = ['C4', 'Eb4', 'G4', 'Bb4', 'C5', 'Bb4', 'G4', 'Eb4'];
       var arpIndex = 0;
@@ -70,7 +74,7 @@
     _initAmbient: function (output) {
       var ambientNoise = new Tone.Noise('brown');
       var filter = new Tone.Filter(80, 'lowpass');
-      var vol = new Tone.Volume(-24);
+      var vol = new Tone.Volume(-30);
       ambientNoise.connect(filter);
       filter.connect(vol);
       vol.connect(output);
