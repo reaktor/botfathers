@@ -22,6 +22,7 @@
       this._buildBoundary(0, 0, size, BOUNDARY_THICKNESS);                           // ceiling
 
       // --- Platforms from config ---
+      this._platformSprites = [];
       for (var i = 0; i < AP.PLATFORMS.length; i++) {
         var p = AP.PLATFORMS[i];
         var pw = p.width * size;
@@ -30,7 +31,23 @@
         var plat = this.platforms.create(px, py, 'platform');
         plat.setDisplaySize(pw, AP.PLATFORM_HEIGHT);
         plat.refreshBody();
+        // Initialise collapse state (Team 2 Coder A)
+        AP.PlatformCollapse.initCollapseState(plat, i);
+        this._platformSprites.push(plat);
       }
+
+      // --- Platform collapse system state (Team 2 Coder A) ---
+      this._matchTime = 0;
+      this._collapseQueue = this._buildCollapseQueue();
+      this._nextCollapseIndex = 0;
+      this._nextCollapseTime = AP.PlatformCollapse.FIRST_COLLAPSE_DELAY;
+
+      // Expose getActivePlatforms for ChaosEventSystem (Team 2 Coder B)
+      var platformGroup = this.platforms;
+      AP.ChaosEventSystem = AP.ChaosEventSystem || {};
+      AP.ChaosEventSystem.getActivePlatforms = function () {
+        return AP.PlatformCollapse.getActivePlatforms(platformGroup);
+      };
 
       // --- Player ---
       this.player = new AP.Player(this, size * 0.5, size * 0.7);
@@ -40,6 +57,9 @@
 
       // Store for update
       this.boundaryThickness = BOUNDARY_THICKNESS;
+
+      // --- Chaos event system (Team 2 Coder B) ---
+      this.setupChaos();
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -77,6 +97,88 @@
           AP.gameSize,
           this.boundaryThickness
         );
+      }
+      this.updatePlatforms(delta);
+      this.updateChaos(time, delta);
+    },
+
+    // --- Team 2 Coder B: Chaos events ---
+
+    setupChaos: function () {
+      this.chaosSystem = new AP.ChaosEventSystem(this);
+    },
+
+    updateChaos: function (time, delta) {
+      if (this.chaosSystem) {
+        this.chaosSystem.update(time, delta);
+      }
+    },
+
+    // --- Team 2 Coder A: Platform collapse ---
+
+    /**
+     * Build the collapse queue sorted by priority (outer first, central last).
+     * Within the same priority tier, order is randomised for variety.
+     */
+    _buildCollapseQueue: function () {
+      var sprites = this._platformSprites.slice();
+
+      // Shuffle first so same-tier order is random
+      for (var i = sprites.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = sprites[i];
+        sprites[i] = sprites[j];
+        sprites[j] = tmp;
+      }
+
+      // Stable-sort by priority tier (lower tier = earlier collapse)
+      sprites.sort(function (a, b) {
+        return a._collapsePriority - b._collapsePriority;
+      });
+
+      return sprites;
+    },
+
+    /**
+     * updatePlatforms(delta) — called every frame from update().
+     * Manages staggered collapse timers and warning flash animations.
+     */
+    updatePlatforms: function (delta) {
+      this._matchTime += delta;
+
+      // --- Trigger next collapse in queue ---
+      if (this._nextCollapseIndex < this._collapseQueue.length &&
+          this._matchTime >= this._nextCollapseTime) {
+
+        var target = this._collapseQueue[this._nextCollapseIndex];
+        // Only start collapse if the platform is still stable (might already be
+        // collapsing from a Meteor Strike chaos event).
+        if (target._collapseState === 'stable') {
+          AP.PlatformCollapse.startCollapse(this, target);
+        }
+        this._nextCollapseIndex++;
+        this._nextCollapseTime += AP.PlatformCollapse.COLLAPSE_STAGGER_INTERVAL;
+      }
+
+      // --- Update warning flash and collapse for all platforms ---
+      var children = this._platformSprites;
+      for (var i = 0; i < children.length; i++) {
+        var p = children[i];
+        if (p._collapseState === 'warning') {
+          p._collapseTimer += delta;
+          p._flashTimer += delta;
+
+          // Toggle visibility to create blinking effect
+          if (p._flashTimer >= AP.PlatformCollapse.COLLAPSE_FLASH_INTERVAL) {
+            p._flashTimer -= 150;
+            p.setAlpha(p.alpha < 1 ? 1 : 0.2);
+          }
+
+          // Warning phase over — collapse the platform
+          if (p._collapseTimer >= AP.PlatformCollapse.COLLAPSE_WARNING_DURATION) {
+            AP.PlatformCollapse.collapse(p);
+          }
+        }
       }
     }
   });
