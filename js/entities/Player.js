@@ -66,28 +66,17 @@
       this._animImg = null;
       this._animState = '';
       if (ANIM_MAP.idle) {
-        // Convert hex color to CSS filter hue-rotate + saturate
-        var hexColor = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
-        var r = (hexColor >> 16) & 0xff;
-        var g = (hexColor >> 8) & 0xff;
-        var b = hexColor & 0xff;
-        // Build a CSS tint overlay using a wrapper div
         var wrapper = document.createElement('div');
         wrapper.className = 'ap-sprite-overlay';
-        wrapper.style.cssText = 'position:absolute;pointer-events:none;';
+        wrapper.style.cssText = 'position:absolute;pointer-events:none;overflow:hidden;';
         var img = document.createElement('img');
         img.src = ANIM_MAP.idle;
         img.style.cssText = 'width:100%;height:100%;image-rendering:pixelated;display:block;';
-        // Color overlay canvas for tinting
-        var tintCanvas = document.createElement('canvas');
-        tintCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:multiply;';
         wrapper.appendChild(img);
-        wrapper.appendChild(tintCanvas);
         document.body.appendChild(wrapper);
         this._animImg = img;
         this._animWrapper = wrapper;
-        this._animTintCanvas = tintCanvas;
-        this._animTintColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+        this._animTintCanvas = null;
         this._animState = 'idle';
         this.setAlpha(0);
       }
@@ -121,16 +110,6 @@
       wrap.style.left = screenX + 'px';
       wrap.style.top = screenY + 'px';
       wrap.style.transform = this.facing === -1 ? 'scaleX(-1)' : '';
-
-      // Draw tint overlay on the canvas
-      var tc = this._animTintCanvas;
-      if (tc && (tc.width !== Math.round(dispW) || tc.height !== Math.round(dispH))) {
-        tc.width = Math.round(dispW);
-        tc.height = Math.round(dispH);
-        var ctx = tc.getContext('2d');
-        ctx.fillStyle = this._animTintColor;
-        ctx.fillRect(0, 0, tc.width, tc.height);
-      }
 
       // Switch animated WebP source on state change
       var src = ANIM_MAP[this.currentState];
