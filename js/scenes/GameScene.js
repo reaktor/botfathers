@@ -109,7 +109,7 @@
     },
 
     _buildBackground: function (size) {
-      this.add.tileSprite(size / 2, size / 2, size, size, 'bg-panels');
+      this.add.image(size / 2, size / 2, 'bg-panels');
     },
 
     /**

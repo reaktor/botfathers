@@ -21,131 +21,147 @@
     },
 
     /**
-     * Procedural space station interior background.
-     * Deep space visible through hull breaches, metallic walls, conduits, warning markings.
-     * Regenerated every game load.
+     * Procedural spaceship interior background — full screen, no tiling.
+     * Damaged hull with space visible through breaches, structural beams,
+     * conduits, emergency lighting. Unique every match.
      */
     _createBackground: function (scene) {
-      var TILE = 256;
+      var S = AP.gameSize;
       var g = scene.add.graphics();
 
-      // --- Deep space base (near-black with slight blue tint) ---
-      g.fillStyle(0x020208, 1);
-      g.fillRect(0, 0, TILE, TILE);
+      // --- Deep space base ---
+      g.fillStyle(0x020206, 1);
+      g.fillRect(0, 0, S, S);
 
-      // --- Distant stars (tiny dots, white/blue/warm) ---
-      var starColors = [0xffffff, 0xaaccff, 0xffeedd, 0x88aaff, 0xffccaa];
-      var starCount = 30 + Math.floor(Math.random() * 40);
+      // --- Starfield ---
+      var starColors = [0xffffff, 0xaaccff, 0xffeedd, 0x88aaff, 0xccddff];
+      var starCount = 150 + Math.floor(Math.random() * 100);
       for (var si = 0; si < starCount; si++) {
-        var sx = Math.random() * TILE;
-        var sy = Math.random() * TILE;
+        var sx = Math.random() * S;
+        var sy = Math.random() * S;
         var sc = starColors[Math.floor(Math.random() * starColors.length)];
-        var sa = 0.3 + Math.random() * 0.7;
-        var sr = Math.random() < 0.1 ? 1.5 : (Math.random() < 0.3 ? 1 : 0.5);
+        var sa = 0.15 + Math.random() * 0.5;
+        var sr = Math.random() < 0.05 ? 2 : (Math.random() < 0.2 ? 1 : 0.5);
         g.fillStyle(sc, sa);
         g.fillCircle(sx, sy, sr);
       }
 
-      // --- Faint nebula wash (large soft color patches) ---
-      var nebulaColors = [0x220044, 0x001133, 0x110022, 0x002244];
-      var nebulaCount = 1 + Math.floor(Math.random() * 2);
-      for (var ni = 0; ni < nebulaCount; ni++) {
-        var nc = nebulaColors[Math.floor(Math.random() * nebulaColors.length)];
-        var nx = Math.random() * TILE;
-        var ny = Math.random() * TILE;
-        var nr = 40 + Math.random() * 60;
-        g.fillStyle(nc, 0.08 + Math.random() * 0.06);
+      // --- Nebula clouds (large soft washes) ---
+      var nebColors = [0x1a0033, 0x001122, 0x0a0022, 0x000d1a, 0x120020];
+      var nebCount = 3 + Math.floor(Math.random() * 3);
+      for (var ni = 0; ni < nebCount; ni++) {
+        var nc = nebColors[Math.floor(Math.random() * nebColors.length)];
+        var nx = Math.random() * S;
+        var ny = Math.random() * S;
+        var nr = S * (0.15 + Math.random() * 0.25);
+        g.fillStyle(nc, 0.15 + Math.random() * 0.1);
         g.fillCircle(nx, ny, nr);
-        g.fillStyle(nc, 0.04);
-        g.fillCircle(nx, ny, nr * 1.5);
+        g.fillStyle(nc, 0.06);
+        g.fillCircle(nx, ny, nr * 1.4);
       }
 
-      // --- Hull plating overlay (semi-transparent dark panels over the stars) ---
-      // This creates the "looking through a damaged hull" effect
-      var panelCount = 3 + Math.floor(Math.random() * 4);
+      // --- Hull structure: large dark wall sections covering parts of the view ---
+      // These are irregular shapes that frame the space view
+      var wallColor = 0x08080e;
+
+      // Left wall section
+      var lww = S * (0.02 + Math.random() * 0.06);
+      g.fillStyle(wallColor, 0.9);
+      g.fillRect(0, 0, lww, S);
+      g.lineStyle(1, 0x181828, 0.6);
+      g.beginPath(); g.moveTo(lww, 0); g.lineTo(lww, S); g.strokePath();
+
+      // Right wall section
+      var rww = S * (0.02 + Math.random() * 0.06);
+      g.fillStyle(wallColor, 0.9);
+      g.fillRect(S - rww, 0, rww, S);
+      g.lineStyle(1, 0x181828, 0.6);
+      g.beginPath(); g.moveTo(S - rww, 0); g.lineTo(S - rww, S); g.strokePath();
+
+      // --- Structural beams (thick dark bars crossing the view) ---
+      var beamCount = 2 + Math.floor(Math.random() * 3);
+      for (var bi = 0; bi < beamCount; bi++) {
+        var bw = 3 + Math.floor(Math.random() * 6);
+        var bAlpha = 0.4 + Math.random() * 0.3;
+        g.fillStyle(0x0a0a14, bAlpha);
+        if (Math.random() > 0.4) {
+          // Horizontal beam
+          var by = Math.floor(Math.random() * S);
+          g.fillRect(0, by, S, bw);
+          // Highlight edge
+          g.lineStyle(1, 0x16162a, 0.3);
+          g.beginPath(); g.moveTo(0, by); g.lineTo(S, by); g.strokePath();
+        } else {
+          // Vertical beam
+          var bx = Math.floor(Math.random() * S);
+          g.fillRect(bx, 0, bw, S);
+          g.lineStyle(1, 0x16162a, 0.3);
+          g.beginPath(); g.moveTo(bx, 0); g.lineTo(bx, S); g.strokePath();
+        }
+      }
+
+      // --- Hull panels (scattered dark rectangles with edge detail) ---
+      var panelCount = 5 + Math.floor(Math.random() * 6);
       for (var pli = 0; pli < panelCount; pli++) {
-        var plx = Math.floor(Math.random() * TILE);
-        var ply = Math.floor(Math.random() * TILE);
-        var plw = 30 + Math.floor(Math.random() * 80);
-        var plh = 20 + Math.floor(Math.random() * 60);
-        // Dark hull panel
-        g.fillStyle(0x0a0a14, 0.7 + Math.random() * 0.25);
+        var plx = Math.floor(Math.random() * S);
+        var ply = Math.floor(Math.random() * S);
+        var plw = S * (0.05 + Math.random() * 0.15);
+        var plh = S * (0.03 + Math.random() * 0.1);
+        g.fillStyle(0x080810, 0.5 + Math.random() * 0.35);
         g.fillRect(plx, ply, plw, plh);
-        // Panel edge highlight
-        g.lineStyle(1, 0x1a1a2e, 0.5);
+        g.lineStyle(1, 0x1a1a2e, 0.3 + Math.random() * 0.2);
         g.strokeRect(plx, ply, plw, plh);
-        // Inner seam
-        if (plw > 40) {
-          g.lineStyle(1, 0x111122, 0.3);
-          g.beginPath();
-          g.moveTo(plx + plw / 2, ply);
-          g.lineTo(plx + plw / 2, ply + plh);
-          g.strokePath();
-        }
+        // Bolts at corners
+        g.fillStyle(0x222233, 0.4);
+        g.fillCircle(plx + 3, ply + 3, 1.5);
+        g.fillCircle(plx + plw - 3, ply + 3, 1.5);
+        g.fillCircle(plx + 3, ply + plh - 3, 1.5);
+        g.fillCircle(plx + plw - 3, ply + plh - 3, 1.5);
       }
 
-      // --- Conduits and pipes (running across hull) ---
-      var pipeColors = [0x1a1a30, 0x221133, 0x182244, 0x151528];
-      var pipeCount = 3 + Math.floor(Math.random() * 4);
-      for (var pi = 0; pi < pipeCount; pi++) {
-        var pipeW = 2 + Math.floor(Math.random() * 4);
-        var pc = pipeColors[Math.floor(Math.random() * pipeColors.length)];
-        g.lineStyle(pipeW, pc, 0.6 + Math.random() * 0.3);
+      // --- Conduit runs (pipes that cross the hull) ---
+      var conduitColors = [0x12122a, 0x1a1133, 0x101828];
+      var conduitCount = 4 + Math.floor(Math.random() * 4);
+      for (var ci = 0; ci < conduitCount; ci++) {
+        var cw = 2 + Math.floor(Math.random() * 3);
+        var cc = conduitColors[Math.floor(Math.random() * conduitColors.length)];
+        g.lineStyle(cw, cc, 0.5 + Math.random() * 0.3);
+        // Conduits with bends (not just straight lines)
         g.beginPath();
-        if (Math.random() > 0.5) {
-          var px = Math.floor(Math.random() * TILE);
-          g.moveTo(px, 0); g.lineTo(px, TILE);
-        } else {
-          var py = Math.floor(Math.random() * TILE);
-          g.moveTo(0, py); g.lineTo(TILE, py);
-        }
-        g.strokePath();
-        // Pipe highlight edge
-        g.lineStyle(1, 0x2a2a44, 0.2);
-        g.beginPath();
-        if (Math.random() > 0.5) {
-          g.moveTo(px - pipeW / 2, 0); g.lineTo(px - pipeW / 2, TILE);
-        } else {
-          g.moveTo(0, py - pipeW / 2); g.lineTo(TILE, py - pipeW / 2);
+        var cx = Math.random() * S;
+        var cy = Math.random() * S;
+        g.moveTo(cx, cy);
+        var segs = 2 + Math.floor(Math.random() * 3);
+        for (var cs = 0; cs < segs; cs++) {
+          if (cs % 2 === 0) {
+            cx += (Math.random() - 0.5) * S * 0.4;
+          } else {
+            cy += (Math.random() - 0.5) * S * 0.4;
+          }
+          cx = Math.max(0, Math.min(S, cx));
+          cy = Math.max(0, Math.min(S, cy));
+          g.lineTo(cx, cy);
         }
         g.strokePath();
       }
 
-      // --- Warning stripes (diagonal hazard markings) ---
-      if (Math.random() < 0.4) {
-        var wy = Math.floor(Math.random() * TILE);
-        g.fillStyle(0x332200, 0.3);
-        g.fillRect(0, wy, TILE, 6);
-        for (var ws = 0; ws < TILE; ws += 12) {
-          g.fillStyle(0x554400, 0.25);
-          g.fillRect(ws, wy, 6, 6);
-        }
-      }
-
-      // --- Dim neon accent lights (emergency lighting feel) ---
-      var accentColors = [AP.NEON_CYAN, AP.NEON_MAGENTA, 0xff4422];
-      var accentCount = 2 + Math.floor(Math.random() * 3);
+      // --- Emergency accent lights (small neon glows) ---
+      var accentColors = [AP.NEON_CYAN, AP.NEON_MAGENTA, 0xff3322, 0xffaa00];
+      var accentCount = 5 + Math.floor(Math.random() * 6);
       for (var ai = 0; ai < accentCount; ai++) {
         var ac = accentColors[Math.floor(Math.random() * accentColors.length)];
-        var ax = Math.random() * TILE;
-        var ay = Math.random() * TILE;
-        // Small light source
-        g.fillStyle(ac, 0.06 + Math.random() * 0.04);
-        g.fillCircle(ax, ay, 8 + Math.random() * 12);
-        g.fillStyle(ac, 0.12 + Math.random() * 0.08);
-        g.fillCircle(ax, ay, 2 + Math.random() * 3);
+        var ax = Math.random() * S;
+        var ay = Math.random() * S;
+        var ar = 4 + Math.random() * 8;
+        g.fillStyle(ac, 0.03 + Math.random() * 0.03);
+        g.fillCircle(ax, ay, ar * 3);
+        g.fillStyle(ac, 0.08 + Math.random() * 0.06);
+        g.fillCircle(ax, ay, ar);
+        g.fillStyle(ac, 0.2 + Math.random() * 0.15);
+        g.fillCircle(ax, ay, 2);
       }
 
-      // --- Rivet dots along panel edges ---
-      var rivetCount = 6 + Math.floor(Math.random() * 10);
-      for (var ri = 0; ri < rivetCount; ri++) {
-        var rx = Math.floor(Math.random() * TILE);
-        var ry = Math.floor(Math.random() * TILE);
-        g.fillStyle(0x2a2a3e, 0.3 + Math.random() * 0.2);
-        g.fillCircle(rx, ry, 1);
-      }
-
-      g.generateTexture('bg-panels', TILE, TILE);
+      g.generateTexture('bg-panels', S, S);
       g.destroy();
     },
 
