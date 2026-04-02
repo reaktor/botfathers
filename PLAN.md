@@ -460,10 +460,21 @@ update(time, delta) {
 | Team | Coder A | Coder B | Manager |
 |------|---------|---------|---------|
 | Team 1 | Bullets + combat | Powerups | Reviews both |
-| Team 2 | Platform collapse | Chaos events | Reviews both |
+| **Team 2** | **Platform collapse ✅** | **Chaos events ✅** | **Reviewed ✅** |
 | Team 3 | Black hole entity | Gravity system | Reviews both |
 
 All coders work in parallel. Managers review after coders commit.
+
+#### Team 2 — DONE (PR #2)
+**Platform Collapse** (`js/entities/Platform.js`):
+- `AP.PlatformCollapse.startCollapse(scene, plat)` — 2s warning flash then collapse
+- `AP.PlatformCollapse.getActivePlatforms(platformGroup)` — returns non-collapsed platforms
+- Priority tiers: outer (tier 1) → mid (tier 2) → central (tier 3). Staggered from ~20s, every 8s.
+
+**Chaos Events** (`js/systems/ChaosEventSystem.js`):
+- Instance: `scene.chaosSystem` — call `chaosSystem.isActive(eventName)` to check flags
+- Events: `gravitySurge` (4s flag), `blackout` (3s overlay depth 900), `meteorStrike` (instant, calls startCollapse), `eventHorizonFlash` (2s flag), `vacuumVent` (3s directional force)
+- Phase 3 wiring: GravitySystem checks `isActive('gravitySurge')`, BlackHole checks `isActive('eventHorizonFlash')`
 
 ---
 
@@ -553,6 +564,7 @@ All coders work in parallel. Managers review after coders commit.
 [2026-04-02] Johan — Restructured for 3 devs with squad model (2 coders + 1 manager per team). 9 agents total in Phase 2.
 [2026-04-02] User — Added Phase 1.5: cyberpunk arena visual overhaul + Tone.js background music. Neon-edged platforms, industrial background, bright cyberpunk theme. Background track and ambient audio pulled forward from Phase 4.
 [2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
+[2026-04-02] Team 2 — Phase 2 complete (PR #2). Platform collapse + chaos events implemented. Vacuum Vent fixed to use delta-time. ChaosEventSystem uses flag-based isActive() API — no direct coupling to Phase 3 systems.
 
 ---
 
