@@ -54,10 +54,12 @@
       if (!inHole) return;
 
       if (this.y > gameSize + this.height / 2) {
-        this.y = -this.height / 2;
+        this.y = boundaryThickness;
+        this.body.setVelocityY(0);
       }
       else if (this.y < -this.height / 2) {
-        this.y = gameSize + this.height / 2;
+        this.y = gameSize - boundaryThickness;
+        this.body.setVelocityY(0);
       }
     }
   });
