@@ -103,27 +103,29 @@
         ease: 'Sine.easeInOut'
       });
 
-      // --- Animated character sprite (DOM img with base64 animated WebP) ---
+      // --- Animated character sprite (raw DOM img over canvas) ---
       var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
 
-      var img = document.createElement('img');
-      // Use base64 data URI so it works on file:// AND plays the animation
-      img.src = (AP.BOTFATHER_DATA && AP.BOTFATHER_DATA.idle) || 'assets/botfather/character_idle.webp';
-      img.style.width = spriteDisplaySize + 'px';
-      img.style.height = spriteDisplaySize + 'px';
-      img.style.imageRendering = 'pixelated';
-      var heroSprite = this.add.dom(centerX, spriteY, img);
-      heroSprite.setOrigin(0.5);
+      var canvas = this.game.canvas;
+      var canvasRect = canvas.getBoundingClientRect();
+      var scaleX = canvasRect.width / w;
+      var scaleY = canvasRect.height / h;
 
-      // Gentle bob
-      this.tweens.add({
-        targets: heroSprite,
-        y: spriteY - 10,
-        duration: 1400,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
+      var img = document.createElement('img');
+      img.src = (AP.BOTFATHER_DATA && AP.BOTFATHER_DATA.idle) || 'assets/botfather/character_idle.webp';
+      var imgW = spriteDisplaySize * scaleX;
+      var imgH = spriteDisplaySize * scaleY;
+      img.style.cssText = 'position:absolute;pointer-events:none;image-rendering:pixelated;'
+        + 'width:' + imgW + 'px;height:' + imgH + 'px;'
+        + 'left:' + (canvasRect.left + (centerX - spriteDisplaySize / 2) * scaleX) + 'px;'
+        + 'top:' + (canvasRect.top + (spriteY - spriteDisplaySize / 2) * scaleY) + 'px;';
+      document.body.appendChild(img);
+      this._heroImg = img;
+
+      // Clean up when leaving this scene
+      this.events.on('shutdown', function () {
+        if (img.parentNode) img.parentNode.removeChild(img);
       });
 
       // --- Decorative separator line ---
