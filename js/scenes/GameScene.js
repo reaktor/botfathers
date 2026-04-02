@@ -116,6 +116,12 @@
       // --- Gravity system (must come after black hole) ---
       this.setupGravity();
 
+      // --- Bullets + combat (Team 1 Coder A) ---
+      this.setupBullets();
+
+      // --- Powerup system (Team 1 Coder B) ---
+      this.setupPowerups();
+
       // --- Chaos event system (Team 2 Coder B) ---
       this.setupChaos();
 
@@ -366,6 +372,10 @@
       // Gravity after input so pull accumulates when idle
       this.updateGravity(delta);
 
+      // Bullets (Team 1 Coder A)
+      this.updateBullets(delta);
+
+      this.updatePowerups(delta);
       this.updatePlatforms(delta);
       this.updateChaos(time, delta);
 
@@ -401,10 +411,69 @@
         }
       }
 
+      // Win condition check
       this.checkWinCondition();
     },
 
+    // --- Team 1 Coder A: Bullets + Combat ---
+
+    setupBullets: function () {
+      this.bulletGroup = AP.Bullet.createPool(this);
+
+      // Bullet-platform collider: destroy bullet on platform hit
+      this.physics.add.collider(this.bulletGroup, this.platforms, function (bullet) {
+        bullet.recycle();
+      });
+
+      // Bullet-player overlap: damage player, destroy bullet (no self-hits)
+      var playerTargets = this.players || (this.player ? [this.player] : []);
+
+      for (var i = 0; i < playerTargets.length; i++) {
+        this.physics.add.overlap(this.bulletGroup, playerTargets[i], function (bullet, player) {
+          // Skip self-hits and already-dead players
+          if (bullet.ownerIndex === player.playerIndex) return;
+          if (!player.alive || !player.active) return;
+          if (!bullet.active) return;
+
+          player.takeDamage(bullet.damage);
+          bullet.recycle();
+        });
+      }
+    },
+
+    updateBullets: function (delta) {
+      if (!this.bulletGroup) return;
+
+      var gameSize = AP.gameSize;
+      var controls = this.controls;
+      var bulletGroup = this.bulletGroup;
+
+      // Handle shooting input for all players
+      for (var i = 0; i < this.players.length; i++) {
+        var p = this.players[i];
+        if (p && p.alive && controls[i] && controls[i].shoot) {
+          if (Phaser.Input.Keyboard.JustDown(controls[i].shoot)) {
+            p.shoot(bulletGroup);
+          }
+        }
+      }
+
+      // Recycle off-screen bullets
+      var bullets = bulletGroup.getChildren();
+      for (var j = bullets.length - 1; j >= 0; j--) {
+        var b = bullets[j];
+        if (!b.active) continue;
+
+        if (b.x < -50 || b.x > gameSize + 50 ||
+            b.y < -50 || b.y > gameSize + 50) {
+          b.recycle();
+        }
+      }
+    },
+
     checkWinCondition: function () {
+      if (this._gameOver) return;
+
       var alive = [];
       for (var i = 0; i < this.players.length; i++) {
         if (this.players[i].active) {
@@ -421,6 +490,71 @@
         this.time.delayedCall(1000, function () {
           self.scene.start('GameOverScene', { winner: winner });
         });
+      }
+      }
+    },
+
+    // --- Team 1 Coder B: Powerups ---
+
+    setupPowerups: function () {
+      // Create the powerup spawner
+      this.powerupSpawner = new AP.PowerupSpawner(this, this.platforms);
+
+      // Setup overlap detection between player(s) and spawned powerups.
+      // We use a per-frame manual check since powerups are created dynamically
+      // and aren't in a single Arcade group with fixed membership.
+    },
+
+    updatePowerups: function (delta) {
+      if (!this.powerupSpawner) return;
+
+      // Update spawner (handles spawn timers + per-powerup animation)
+      this.powerupSpawner.update(delta);
+
+      // Collect all players into an array (supports both single and multi-player)
+      var players = this.players || (this.player ? [this.player] : []);
+
+      // Check pickup overlaps
+      var activePowerups = this.powerupSpawner.activePowerups;
+      for (var i = activePowerups.length - 1; i >= 0; i--) {
+        var powerup = activePowerups[i];
+        if (!powerup || !powerup.active) continue;
+
+        for (var j = 0; j < players.length; j++) {
+          var player = players[j];
+          if (!player || !player.active) continue;
+
+          // Simple distance-based overlap check
+          var dx = player.x - powerup.x;
+          var dy = player.y - powerup.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var pickupRange = AP.Powerup.RADIUS + AP.PLAYER_HITBOX_W / 2;
+
+          if (dist < pickupRange) {
+            player.pickupPowerup(powerup.typeKey);
+            powerup.consume();
+            break;  // powerup consumed, move to next
+          }
+        }
+      }
+
+      // Update powerup duration timers for all players
+      for (var k = 0; k < players.length; k++) {
+        var p = players[k];
+        if (!p || !p.active || !p._powerupType) continue;
+
+        // Update glow position to follow player
+        if (p._powerupGlow && p._powerupGlow.active) {
+          p._powerupGlow.setPosition(p.x, p.y);
+        }
+
+        // Duration countdown (skip for -1 which means "until consumed/hit")
+        if (p._powerupTimeLeft > 0) {
+          p._powerupTimeLeft -= delta;
+          if (p._powerupTimeLeft <= 0) {
+            p.clearPowerup();
+          }
+        }
       }
     },
 
