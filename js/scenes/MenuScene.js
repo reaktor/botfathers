@@ -60,7 +60,7 @@
 
       var titleLine2 = this.add.text(centerX, titleY + titleLine1.height + 6, 'GRAVITY WELL', {
         fontFamily: FONT_FAMILY,
-        fontSize: Math.max(16, Math.floor(w / 20)) + 'px',
+        fontSize: Math.max(12, Math.floor(w / 30)) + 'px',
         color: NEON_CYAN,
         fontStyle: 'bold',
         align: 'center'
@@ -103,34 +103,29 @@
         ease: 'Sine.easeInOut'
       });
 
-      // --- Character sprites row ---
-      var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + 38;
+      // --- Single centered character sprite (original colors, no tint) ---
       var spriteTexture = AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback';
-      var spriteScale = (AP.PLAYER_RENDER_SIZE * 2.5) / (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
-      var spriteSpacing = w / 5; // divide width into 5 slots so 4 sprites are evenly spaced
-      var spriteColors = AP.PLAYER_COLORS;
+      var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 3.5;
+      var spriteScale = spriteDisplaySize / (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
+      var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
 
-      for (var ci = 0; ci < 4; ci++) {
-        var sx = spriteSpacing * (ci + 1);
-        var sprite = this.add.image(sx, spriteY, spriteTexture);
-        sprite.setScale(spriteScale);
-        sprite.setTint(spriteColors[ci]);
-        sprite.setOrigin(0.5);
+      var heroSprite = this.add.image(centerX, spriteY, spriteTexture);
+      heroSprite.setScale(spriteScale);
+      heroSprite.setOrigin(0.5);
+      // No tint — original sprite colors
 
-        // Gentle floating bob animation, staggered per character
-        this.tweens.add({
-          targets: sprite,
-          y: spriteY - 6,
-          duration: 1200 + ci * 200,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut',
-          delay: ci * 150
-        });
-      }
+      // Gentle floating bob
+      this.tweens.add({
+        targets: heroSprite,
+        y: spriteY - 8,
+        duration: 1400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
 
       // --- Decorative separator line ---
-      var separatorY = spriteY + (AP.PLAYER_RENDER_SIZE * 2.5) / 2 + 16;
+      var separatorY = spriteY + spriteDisplaySize / 2 + 12;
       var sepGfx = this.add.graphics();
       sepGfx.lineStyle(1, 0xff00ff, 0.5);
       sepGfx.lineBetween(w * 0.15, separatorY, w * 0.85, separatorY);
@@ -226,7 +221,7 @@
       }).setOrigin(0.5);
 
       // --- Start prompt ---
-      var startY = h * 0.82;
+      var startY = h * 0.88;
 
       this._startPrompt = this.add.text(centerX, startY, 'PRESS ENTER TO START', {
         fontFamily: FONT_FAMILY,
@@ -247,7 +242,7 @@
       });
 
       // --- Bottom credit line ---
-      this.add.text(centerX, h * 0.94, 'BOTFATHERS // HACKATHON 2026', {
+      this.add.text(centerX, h * 0.96, 'BOTFATHERS // HACKATHON 2026', {
         fontFamily: FONT_FAMILY,
         fontSize: Math.max(8, Math.floor(w / 60)) + 'px',
         color: DIM_MAGENTA,
