@@ -40,6 +40,31 @@
 
       // Store for update
       this.boundaryThickness = BOUNDARY_THICKNESS;
+
+      // --- Gravity system ---
+      this.setupGravity();
+    },
+
+    // --- Team 3 Coder B: Gravity ---
+
+    setupGravity: function () {
+      AP.GravitySystem.reset();
+
+      // Register the single player (Phase 1 has one player; multi-player will use this.players)
+      if (this.player) {
+        AP.GravitySystem.addBody(this.player);
+      }
+
+      // Register all players if a players array exists (Phase 2+)
+      if (this.players) {
+        for (var i = 0; i < this.players.length; i++) {
+          AP.GravitySystem.addBody(this.players[i]);
+        }
+      }
+    },
+
+    updateGravity: function (delta) {
+      AP.GravitySystem.update(delta);
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -69,6 +94,8 @@
     },
 
     update: function (time, delta) {
+      this.updateGravity(delta);
+
       if (this.player && this.player.active) {
         this.player.handleInput(
           this.controls[0],
