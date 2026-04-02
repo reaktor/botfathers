@@ -541,6 +541,9 @@
           var hitDist = AP.PLAYER_RENDER_SIZE * 0.4;
           if (dx * dx + dy * dy < hitDist * hitDist) {
             target.takeDamage(b.damage);
+            if (AP.AudioManager && AP.AudioManager.playHit) {
+              AP.AudioManager.playHit();
+            }
             b.recycle();
             break;
           }

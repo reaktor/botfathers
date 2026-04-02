@@ -10,6 +10,7 @@
   var deathSynth = null;
   var deathNoise = null;
   var deathOutput = null;
+  var hitSynth = null;
   var _moveLastTime = 0;
 
   AP.AudioManager = {
@@ -37,6 +38,7 @@
         AP.AudioManager._initMoveSFX(masterVol);
         AP.AudioManager._initKnockbackSFX(masterVol);
         AP.AudioManager._initDeathSFX(masterVol);
+        AP.AudioManager._initHitSFX(masterVol);
         AP.AudioManager._initMuteKey();
 
         Tone.Transport.bpm.value = 90;
@@ -159,6 +161,20 @@
     playKnockback: function () {
       if (!started || !knockbackSynth) return;
       knockbackSynth.triggerAttackRelease('C1', '16n');
+    },
+
+    /** Sharp zap for bullet hit. */
+    _initHitSFX: function (output) {
+      hitSynth = new Tone.Synth({
+        oscillator: { type: 'square' },
+        envelope: { attack: 0.003, decay: 0.1, sustain: 0, release: 0.05 }
+      }).connect(new Tone.Volume(0).connect(output));
+    },
+
+    /** Play hit sound when bullet connects. */
+    playHit: function () {
+      if (!started || !hitSynth) return;
+      hitSynth.triggerAttackRelease('G4', '32n');
     },
 
     /** Play horrific death sound on head stomp. */
