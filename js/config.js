@@ -8,8 +8,25 @@
   AP.GRAVITY = 300;
   AP.PLAYER_SPEED = 200;
   AP.JUMP_VELOCITY = -350;
-  AP.PLAYER_SIZE = 24;
   AP.PLATFORM_HEIGHT = 16;
+
+  AP.PLAYER_RENDER_SIZE = 48;
+  AP.PLAYER_HITBOX_W = 32;
+  AP.PLAYER_HITBOX_H = 40;
+
+  AP.PLAYER_COLORS = [
+    0x00ffff,  // P1 cyan
+    0xff00ff,  // P2 magenta
+    0x00ff66,  // P3 green
+    0xff8800   // P4 orange
+  ];
+
+  AP.NEON_CYAN    = 0x00ffff;
+  AP.NEON_MAGENTA = 0xff00ff;
+  AP.NEON_GREEN   = 0x00ff66;
+  AP.ELECTRIC_BLUE = 0x4466ff;
+  AP.DARK_BASE    = 0x0a0a12;
+  AP.GRID_LINE    = 0x1a1a2e;
 
   // Arena holes config — 2 holes per edge (floor + ceiling), positioned opposite each other
   // Each hole is { x, width } in fraction of game width (0-1)

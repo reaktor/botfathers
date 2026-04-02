@@ -430,7 +430,7 @@ update(time, delta) {
 
 ---
 
-### Phase 1.5 — Arena Visual Overhaul + Audio `[NOT STARTED]`
+### Phase 1.5 — Arena Visual Overhaul + Audio `[DONE]`
 **Who:** Dedicated team (before Phase 2 parallel build)
 **Files:** Modify `SpriteFactory.js`, `BootScene.js`, `GameScene.js`, `config.js`; Create `js/systems/AudioManager.js`
 
@@ -638,6 +638,7 @@ Countdown (in GameScene):
 [2026-04-02] User — Added Phase 1.5: cyberpunk arena visual overhaul + Tone.js background music. Neon-edged platforms, industrial background, bright cyberpunk theme. Background track and ambient audio pulled forward from Phase 4.
 [2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
 [2026-04-02] Team 2 — Phase 2 complete (PR #2). Platform collapse + chaos events implemented. Vacuum Vent fixed to use delta-time. ChaosEventSystem uses flag-based isActive() API — no direct coupling to Phase 3 systems.
+[2026-04-02] Team 1 — Phase 1.5: Used existing botfather WebP sprites (214x214 single frames) for player characters instead of generating new PNGs. Tinted per player, scaled to 48px. Arena textures procedurally generated via Phaser Graphics API. Removed stale AP.PLAYER_SIZE constant (replaced by AP.PLAYER_RENDER_SIZE).
 
 ---
 
