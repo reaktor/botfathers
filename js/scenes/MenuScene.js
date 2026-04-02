@@ -103,18 +103,19 @@
         ease: 'Sine.easeInOut'
       });
 
-      // --- Single centered character sprite (original colors, no tint) ---
-      var spriteTexture = AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback';
-      var spriteNativeSize = AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE;
+      // --- Animated character sprite (DOM element so browser plays animated WebP) ---
       var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
-      var spriteScale = spriteDisplaySize / spriteNativeSize;
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
 
-      var heroSprite = this.add.image(centerX, spriteY, spriteTexture);
-      heroSprite.setScale(spriteScale);
+      var img = document.createElement('img');
+      img.src = 'assets/botfather/character_idle.webp';
+      img.style.width = spriteDisplaySize + 'px';
+      img.style.height = spriteDisplaySize + 'px';
+      img.style.imageRendering = 'pixelated';
+      var heroSprite = this.add.dom(centerX, spriteY, img);
       heroSprite.setOrigin(0.5);
 
-      // Idle animation: bob + subtle breathing scale + texture cycling
+      // Gentle bob
       this.tweens.add({
         targets: heroSprite,
         y: spriteY - 10,
@@ -123,16 +124,6 @@
         repeat: -1,
         ease: 'Sine.easeInOut'
       });
-      this.tweens.add({
-        targets: heroSprite,
-        scaleX: spriteScale * 1.03,
-        scaleY: spriteScale * 1.03,
-        duration: 2000,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
-      });
-      // Just idle — bob + breathing is enough
 
       // --- Decorative separator line ---
       var separatorY = spriteY + spriteDisplaySize / 2 + 12;
