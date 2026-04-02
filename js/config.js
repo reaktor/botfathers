@@ -53,7 +53,7 @@
   var size = Math.min(window.innerWidth, window.innerHeight);
 
   var config = {
-    type: Phaser.AUTO,
+    type: window.location.protocol === 'file:' ? Phaser.CANVAS : Phaser.AUTO,
     width: size,
     height: size,
     backgroundColor: '#0a0a1a',
