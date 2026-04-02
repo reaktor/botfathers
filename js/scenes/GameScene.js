@@ -11,11 +11,12 @@
     },
 
     create: function () {
-      // Kill any leftover menu hero sprite
-      if (AP._menuHeroImg) {
-        if (AP._menuHeroImg.parentNode) AP._menuHeroImg.parentNode.removeChild(AP._menuHeroImg);
-        AP._menuHeroImg = null;
+      // Kill ALL orphaned DOM imgs from menu/previous scene
+      var orphans = document.querySelectorAll('body > img');
+      for (var oi = 0; oi < orphans.length; oi++) {
+        orphans[oi].parentNode.removeChild(orphans[oi]);
       }
+      AP._menuHeroImg = null;
 
       var size = AP.gameSize;
       this.controls = AP.InputManager.create(this);
