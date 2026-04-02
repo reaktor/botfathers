@@ -242,6 +242,7 @@
     width: size,
     height: size,
     backgroundColor: '#0a0a1a',
+    dom: { createContainer: true },
     physics: {
       default: 'arcade',
       arcade: {

@@ -641,6 +641,58 @@ Branding (MenuScene.js):
 
 ---
 
+### Phase 3 Polish — Visual Juice (Team 2) `[IN PROGRESS]`
+**Who:** Team 2 (PR branch: team-2/phase-3-polish)
+**Issues:** #25, #22, #21, #29, #30, #32
+
+#### Agent A — Character Sprites on Title Screen + Death Particles (#25, #21)
+```
+FILES YOU OWN:
+- js/scenes/MenuScene.js (add character sprites to title screen)
+- js/entities/Player.js (trigger death particles on eliminate)
+- js/scenes/GameScene.js (camera shake on player death)
+
+Spec:
+Title Screen Sprites (#25):
+- Show all 4 player character sprites centered on MenuScene
+- Row below the tagline, above the controls section
+- Larger than in-game size (2-3x AP.PLAYER_RENDER_SIZE)
+- Each tinted in player color (cyan, magenta, green, orange)
+- Gentle idle animation (subtle bob or pulse tween)
+- Use same sprite assets from BootScene (botfather WebPs or fallback)
+
+Death Particles + Camera Shake (#21):
+- On player eliminate(): spawn burst of particles in player's color
+- 15-25 small particles flying outward, fade over 0.5s
+- Use Phaser particle emitter or manual graphics
+- Camera shake: brief 100-200ms shake on death (scene.cameras.main.shake())
+- Must be performant — no lingering particle objects
+```
+
+#### Agent B — Starfield Parallax + Black Hole Particle Swirl (#22)
+```
+FILES YOU OWN:
+- js/scenes/GameScene.js (parallax starfield layer behind everything)
+- js/entities/BlackHole.js (enhanced particle swirl)
+
+Spec:
+Starfield Parallax (#22):
+- Add a slow-scrolling star layer behind the main background
+- Stars drift slightly based on a gentle sine wave or fixed slow scroll
+- Separate from the main background — this is a depth/parallax layer
+- Very subtle movement, adds depth without distraction
+- Use Phaser tileSprite or a group of star sprites
+
+Black Hole Particle Swirl:
+- Enhance existing black hole particles with more visible swirl
+- Particles should visually spiral inward toward the center
+- Vary particle sizes and speeds for organic feel
+- Maybe add a faint accretion disk glow ring around the event horizon
+- Don't break existing BlackHole update/visual logic — enhance it
+```
+
+---
+
 ### Phase 4 — Polish `[NOT STARTED]`
 **Who:** Split freely, no file conflicts
 
@@ -648,7 +700,6 @@ Branding (MenuScene.js):
 |------|-------|
 | HUD (HP, powerup, black hole size) | HUD methods in `GameScene.js` |
 | Audio (Tone.js cyberpunk synth) | `AudioManager.js` |
-| Particles + visual effects | `SpriteFactory.js`, `GameScene.js` |
 
 **Audio palette (Tone.js) — gameplay SFX** (background track + ambient already in Phase 1.5):
 - Square wave laser shots, bitcrushed hit impacts
