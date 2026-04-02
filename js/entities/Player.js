@@ -343,25 +343,37 @@
     },
 
     /**
-     * Eliminate this player from the match (death).
-     * Disables physics body, hides sprite, marks as not alive.
+     * Eliminate this player — death particle burst, camera shake, SFX.
      */
     eliminate: function () {
       if (!this.alive) return;
       this.alive = false;
 
-     * eliminate() — kill this player with a death particle burst.
-     * Spawns 20 small rectangles in the player's color that fly outward
-     * and fade over ~0.6s, then cleans them up.
-     * Also triggers camera shake via the scene.
-     */
-    eliminate: function () {
-      if (!this.active) return;
-
       var px = this.x;
       var py = this.y;
       var color = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
       var scene = this.scene;
+
+      // Death SFX
+      if (AP.AudioManager && AP.AudioManager.playDeath) {
+        AP.AudioManager.playDeath();
+      }
+
+      // Camera shake
+      if (scene.cameras && scene.cameras.main) {
+        scene.cameras.main.shake(150, 0.008);
+      }
+
+      // Drop held powerup
+      if (typeof this.dropPowerup === 'function') {
+        var dropped = this.dropPowerup();
+        if (dropped && scene.powerupSpawner) {
+          scene.powerupSpawner.trackPowerup(dropped);
+        }
+      }
+      if (typeof this.clearPowerup === 'function') {
+        this.clearPowerup();
+      }
 
       // Deactivate the player
       this.setActive(false).setVisible(false);
@@ -371,44 +383,8 @@
         this.body.enable = false;
       }
 
-      // Camera shake — brief 150ms, low intensity
-      if (scene.cameras && scene.cameras.main) {
-        scene.cameras.main.shake(150, 0.008);
-      }
-
-      // Death SFX
-      if (AP.AudioManager && AP.AudioManager.playDeath) {
-        AP.AudioManager.playDeath();
-      }
-
-      // Drop held powerup before dying
-      if (typeof this.dropPowerup === 'function') {
-        var dropped = this.dropPowerup();
-        // Track dropped powerup in spawner so it gets updates + pickup detection
-        if (dropped && this.scene && this.scene.powerupSpawner) {
-          this.scene.powerupSpawner.trackPowerup(dropped);
-        }
-      }
-
-      // Clean up any remaining powerup visuals
-      if (typeof this.clearPowerup === 'function') {
-        this.clearPowerup();
-      }
-
-      // Visual death feedback — brief flash then hide
-      this.setTint(0xff0000);
-      var self = this;
-      this.scene.time.delayedCall(200, function () {
-        self.setActive(false);
-        self.setVisible(false);
-        if (self.body) {
-          self.body.enable = false;
-        }
-      });
       // Spawn death particles — 20 small rectangles flying outward
       var particleCount = 20;
-      var particles = [];
-
       for (var i = 0; i < particleCount; i++) {
         var size = 2 + Math.random() * 4;
         var gfx = scene.add.graphics();
@@ -416,9 +392,7 @@
         gfx.fillRect(-size / 2, -size / 2, size, size);
         gfx.setPosition(px, py);
         gfx.setDepth(500);
-        particles.push(gfx);
 
-        // Random outward direction
         var angle = (Math.PI * 2 / particleCount) * i + (Math.random() - 0.5) * 0.6;
         var speed = 80 + Math.random() * 120;
         var targetX = px + Math.cos(angle) * speed;
