@@ -12,9 +12,18 @@ Hackathon project — **3 human devs**, each running a **squad of 3 Claude agent
 project-root/
   index.html                    # Entry point, Phaser CDN + Tone.js CDN, <script> tags in order
   PLAN.md                       # This file — shared team plan
+  assets/                       # SpriteCook-generated PNGs (added in Phase 1.5)
+    bg-panels.png               # Industrial background tile (metal panels, pipes, circuits)
+    platform-neon.png           # Neon-edged platform tile
+    boundary-grate.png          # Floor/ceiling industrial grate texture
+    hole-warning.png            # Pulsing neon warning strip for holes
+    player-cyan.png             # P1 sprite
+    player-magenta.png          # P2 sprite
+    player-green.png            # P3 sprite
+    player-orange.png           # P4 sprite
   js/
     config.js                   # Phaser config, constants, shared namespace (window.AP)
-    utils/SpriteFactory.js      # Procedural sprite generation (no image assets)
+    utils/SpriteFactory.js      # Asset loading helper + fallback procedural generation
     entities/
       Player.js                 # Player state, movement, HP, powerup slot, shooting
       Bullet.js                 # Bullet pool, firing, collision
@@ -28,7 +37,7 @@ project-root/
       PowerupSpawner.js         # Timed random powerup spawning
       AudioManager.js           # Tone.js synth engine — retro cyberpunk sound design
     scenes/
-      BootScene.js              # Asset generation, preload
+      BootScene.js              # Asset preload (SpriteCook PNGs) + fallback procedural generation
       MenuScene.js              # Title screen, player count select
       GameScene.js              # Main gameplay orchestrator (hookpoint skeleton)
       GameOverScene.js          # Winner display, restart
@@ -421,6 +430,30 @@ update(time, delta) {
 
 ---
 
+### Phase 1.5 — Arena Visual Overhaul + Audio `[NOT STARTED]`
+**Who:** Dedicated team (before Phase 2 parallel build)
+**Files:** Modify `SpriteFactory.js`, `BootScene.js`, `GameScene.js`, `config.js`; Create `js/systems/AudioManager.js`
+
+**Theme:** Cyberpunk industrial arena — dark metallic background with bright neon accents. Reference: wrecked space station interior with glowing pipes, grates, and panels. Bright neon colors (magenta, cyan, green, electric blue) against dark industrial surfaces.
+
+#### Arena Visual Overhaul (SpriteCook assets)
+- **Asset pipeline:** Generate PNGs in SpriteCook, drop into `assets/` folder. `BootScene.js` preloads them via `this.load.image()`. `SpriteFactory.js` keeps procedural fallbacks in case assets are missing (graceful degradation for dev).
+- **Background:** `bg-panels.png` — dark industrial cyberpunk tile (metal panels, pipes, vents, circuit-line details). Tiled across the arena. Dark base (`#0a0a12`) with subtle grid lines and panel edges in dim purple/blue.
+- **Platforms:** `platform-neon.png` — neon-edged blocks with dark metallic fill and bright glowing edges. 9-patch or tiled to fit different platform widths. 12-15 irregular platforms across full screen.
+- **Boundaries (floor/ceiling):** `boundary-grate.png` — industrial grate texture with neon trim. Brighter and heavier than regular platforms to frame the arena.
+- **Holes:** `hole-warning.png` — pulsing neon warning strips at hole edges.
+- **Players:** `player-cyan.png`, `player-magenta.png`, `player-green.png`, `player-orange.png` — 4 distinct cyberpunk character sprites with bright neon colors.
+
+#### Game Sound (Tone.js)
+- **Background track:** Pulsing synthwave loop — low BPM, dark bass with arpeggiated synth melody. Starts on first user interaction (browser autoplay policy).
+- **Movement SFX:** Subtle synth blip on jump.
+- **Ambient:** Low electrical hum layered under the music.
+- Mute toggle via `M` key.
+
+**Testable:** Cyberpunk arena renders with neon platforms and industrial background, 4 players have distinct neon colors, background music plays.
+
+---
+
 ### Phase 2 — Parallel Build `[NOT STARTED]`
 **Who:** 3 teams × 3 agents = 9 agents running simultaneously
 
@@ -460,11 +493,10 @@ All coders work in parallel. Managers review after coders commit.
 | Particles + visual effects | `SpriteFactory.js`, `GameScene.js` |
 | 3-2-1 countdown | `GameScene.js` |
 
-**Audio palette (Tone.js):**
+**Audio palette (Tone.js) — gameplay SFX** (background track + ambient already in Phase 1.5):
 - Square wave laser shots, bitcrushed hit impacts
 - Low rumble black hole drone (pitch scales with size)
 - Distorted death explosion, synthwave powerup chimes
-- Pulsing background track
 
 ---
 
@@ -481,6 +513,8 @@ All coders work in parallel. Managers review after coders commit.
 | `ChaosEventSystem.js` | — | — | — | — | **CREATE** | — | — | wire effects |
 | `BlackHole.js` | — | — | — | — | — | **CREATE** | — | — |
 | `GravitySystem.js` | — | — | — | — | — | — | **CREATE** | wire bullets |
+| `AudioManager.js` | — | — | — | — | — | — | — | Phase 1.5: CREATE, Phase 4: add gameplay SFX |
+| `SpriteFactory.js` | DONE | — | — | — | — | — | — | Phase 1.5: cyberpunk textures |
 
 **Rule: If your name isn't in a cell, don't touch that file/method.**
 
@@ -488,7 +522,7 @@ All coders work in parallel. Managers review after coders commit.
 
 ## Key Technical Decisions
 - **Custom gravity** layered on top of Phaser's base gravity — inverse-square with force capping
-- **Procedural sprites** — no image assets, everything generated via `Graphics + generateTexture()`
+- **SpriteCook assets** — cyberpunk PNGs in `assets/`, loaded in BootScene. SpriteFactory keeps procedural fallbacks for dev/graceful degradation
 - **Global namespace** (`window.AP`) — no ES modules to keep `file://` compatibility
 - **Bullet pooling** via Phaser's Arcade Group for performance
 - **Audio: Tone.js via CDN** — retro cyberpunk synth sound design. CDN: `https://cdn.jsdelivr.net/npm/tone/build/Tone.min.js`
@@ -517,6 +551,8 @@ All coders work in parallel. Managers review after coders commit.
 [2026-04-02] Claude — Milestone 1: hardcoded platforms as simple data array.
 [2026-04-02] Codex — Milestone 1 scaffold verified against Phaser 3 docs patterns.
 [2026-04-02] Johan — Restructured for 3 devs with squad model (2 coders + 1 manager per team). 9 agents total in Phase 2.
+[2026-04-02] User — Added Phase 1.5: cyberpunk arena visual overhaul + Tone.js background music. Neon-edged platforms, industrial background, bright cyberpunk theme. Background track and ambient audio pulled forward from Phase 4.
+[2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
 
 ---
 
