@@ -13,7 +13,7 @@
 
   // Per-event durations (ms)
   var GRAVITY_SURGE_DURATION   = 4000;
-  var BLACKOUT_DURATION        = 3000;
+  var BLACKOUT_DURATION        = 800;
   var EVENT_HORIZON_DURATION   = 2000;
   var VACUUM_VENT_DURATION     = 3000;
 

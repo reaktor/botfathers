@@ -42,6 +42,10 @@
       Phaser.Scene.call(this, { key: 'BootScene' });
     },
 
+    preload: function () {
+      this.load.image('blackhole-sprite', 'assets/blackhole.png');
+    },
+
     create: function () {
       var scene = this;
 
