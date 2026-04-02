@@ -109,7 +109,7 @@
 
     applyKnockback: function (dirX, force) {
       this.body.setVelocityX(dirX * force);
-      this.body.setVelocityY(-force * 0.4);
+      this.body.setVelocityY(-force * 0.1);
       this._knockbackTimer = 300; // invulnerable for 0.3s
     },
 
