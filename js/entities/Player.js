@@ -45,6 +45,11 @@
       this.hp = 3;
       this.alive = true;
       this._lastFireTime = 0;
+
+      // Powerup state
+      this._powerupType = null;
+      this._powerupTimeLeft = 0;
+      this._powerupGlow = null;
     },
 
     handleInput: function (keys, delta, holes, gameSize, boundaryThickness) {
@@ -237,6 +242,20 @@
     eliminate: function () {
       if (!this.alive) return;
       this.alive = false;
+
+      // Drop held powerup before dying
+      if (typeof this.dropPowerup === 'function') {
+        var dropped = this.dropPowerup();
+        // Track dropped powerup in spawner so it gets updates + pickup detection
+        if (dropped && this.scene && this.scene.powerupSpawner) {
+          this.scene.powerupSpawner.trackPowerup(dropped);
+        }
+      }
+
+      // Clean up any remaining powerup visuals
+      if (typeof this.clearPowerup === 'function') {
+        this.clearPowerup();
+      }
 
       // Visual death feedback — brief flash then hide
       this.setTint(0xff0000);
