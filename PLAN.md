@@ -493,16 +493,66 @@ All coders work in parallel. Managers review after coders commit.
 
 ---
 
+### Phase 2.5 — UI & Onboarding (Team 2 bonus) `[IN PROGRESS]`
+**Who:** Team 2 (while Teams 1 & 3 finish Phase 2)
+**Files:** Create `MenuScene.js`, `GameOverScene.js`; modify `BootScene.js`, `GameScene.js` (countdown only), `config.js` (scene list), `index.html` (script tags)
+
+#### Agent A — MenuScene (title + controls + player count)
+```
+FILES YOU OWN:
+- js/scenes/MenuScene.js (CREATE)
+- js/scenes/BootScene.js (modify: go to MenuScene instead of GameScene)
+- index.html (add MenuScene.js script tag)
+- js/config.js (add MenuScene to scene list)
+
+Spec:
+- Cyberpunk-styled title screen: "ASTEROID PANIC: GRAVITY WELL" in neon text
+- Controls display showing all 4 player control schemes:
+  - P1: WASD + Space (shoot)
+  - P2: Arrow keys + Enter (shoot)
+  - P3: IJKL + H (shoot)
+  - P4: Numpad 8456 + 0 (shoot)
+- Player count selector (2-4 players), default 4
+- "PRESS ENTER TO START" prompt (pulses/blinks)
+- Pass selected player count to GameScene via scene data: this.scene.start('GameScene', { playerCount: n })
+- Dark background (#0a0a1a), monospace font, neon magenta/cyan colors
+- BootScene should go to MenuScene instead of GameScene
+```
+
+#### Agent B — GameOverScene + Countdown
+```
+FILES YOU OWN:
+- js/scenes/GameOverScene.js (CREATE)
+- js/scenes/GameScene.js (ONLY add countdown logic at start of create())
+- index.html (add GameOverScene.js script tag)
+- js/config.js (add GameOverScene to scene list)
+
+Spec:
+GameOverScene:
+- Receives winner data: this.scene.start('GameOverScene', { winner: playerIndex })
+- Display "PLAYER N WINS" in winner's neon color
+- Show final stats if available (kills, survival time)
+- "PRESS ENTER TO RESTART" → goes back to MenuScene
+- Cyberpunk styling matching MenuScene
+
+Countdown (in GameScene):
+- 3-2-1-GO! countdown at start of match before gameplay begins
+- Large centered text, each number holds for 1s
+- Players visible but input disabled during countdown
+- "GO!" text fades out, gameplay begins
+- Use Phaser time events, not raw timers
+```
+
+---
+
 ### Phase 4 — Polish `[NOT STARTED]`
 **Who:** Split freely, no file conflicts
 
 | Task | Files |
 |------|-------|
-| Menu + Game Over screens | `MenuScene.js`, `GameOverScene.js` |
 | HUD (HP, powerup, black hole size) | HUD methods in `GameScene.js` |
 | Audio (Tone.js cyberpunk synth) | `AudioManager.js` |
 | Particles + visual effects | `SpriteFactory.js`, `GameScene.js` |
-| 3-2-1 countdown | `GameScene.js` |
 
 **Audio palette (Tone.js) — gameplay SFX** (background track + ambient already in Phase 1.5):
 - Square wave laser shots, bitcrushed hit impacts
