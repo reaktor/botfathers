@@ -44,6 +44,13 @@
 
     preload: function () {
       this.load.image('blackhole-sprite', 'assets/blackhole.png');
+      // Load botfather character sprites from webp files
+      this.load.image('char-idle', 'assets/botfather/character_idle.webp');
+      this.load.image('char-run', 'assets/botfather/character_front_run_run.webp');
+      this.load.image('char-jump', 'assets/botfather/character_jump.webp');
+      this.load.image('char-attack', 'assets/botfather/character_attack.webp');
+      this.load.image('char-hurt', 'assets/botfather/character_hurt.webp');
+      this.load.image('char-death', 'assets/botfather/character_death.webp');
     },
 
     create: function () {

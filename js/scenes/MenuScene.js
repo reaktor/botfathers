@@ -60,7 +60,7 @@
 
       var titleLine2 = this.add.text(centerX, titleY + titleLine1.height + 6, 'GRAVITY WELL', {
         fontFamily: FONT_FAMILY,
-        fontSize: Math.max(16, Math.floor(w / 20)) + 'px',
+        fontSize: Math.max(12, Math.floor(w / 30)) + 'px',
         color: NEON_CYAN,
         fontStyle: 'bold',
         align: 'center'
@@ -103,8 +103,31 @@
         ease: 'Sine.easeInOut'
       });
 
+      // --- Animated character sprite (raw DOM img over canvas) ---
+      var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
+      var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
+
+      var canvas = this.game.canvas;
+      var canvasRect = canvas.getBoundingClientRect();
+      var scaleX = canvasRect.width / w;
+      var scaleY = canvasRect.height / h;
+
+      var img = document.createElement('img');
+      img.src = (AP.BOTFATHER_DATA && AP.BOTFATHER_DATA.idle) || 'assets/botfather/character_idle.webp';
+      var imgW = spriteDisplaySize * scaleX;
+      var imgH = spriteDisplaySize * scaleY;
+      img.className = 'ap-sprite-overlay';
+      img.style.cssText = 'position:absolute;pointer-events:none;image-rendering:pixelated;'
+        + 'width:' + imgW + 'px;height:' + imgH + 'px;'
+        + 'left:' + (canvasRect.left + (centerX - spriteDisplaySize / 2) * scaleX) + 'px;'
+        + 'top:' + (canvasRect.top + (spriteY - spriteDisplaySize / 2) * scaleY) + 'px;';
+      document.body.appendChild(img);
+      // Store reference for cleanup AND keep closure ref
+      this._heroImg = img;
+      AP._menuHeroImg = img;
+
       // --- Decorative separator line ---
-      var separatorY = titleY + titleLine1.height + titleLine2.height + tagline.height + 28;
+      var separatorY = spriteY + spriteDisplaySize / 2 + 12;
       var sepGfx = this.add.graphics();
       sepGfx.lineStyle(1, 0xff00ff, 0.5);
       sepGfx.lineBetween(w * 0.15, separatorY, w * 0.85, separatorY);
@@ -200,7 +223,7 @@
       }).setOrigin(0.5);
 
       // --- Start prompt ---
-      var startY = h * 0.82;
+      var startY = h * 0.88;
 
       this._startPrompt = this.add.text(centerX, startY, 'PRESS ENTER TO START', {
         fontFamily: FONT_FAMILY,
@@ -221,22 +244,132 @@
       });
 
       // --- Bottom credit line ---
-      this.add.text(centerX, h * 0.94, 'BOTFATHERS // HACKATHON 2026', {
+      this.add.text(centerX, h * 0.96, 'BOTFATHERS // HACKATHON 2026', {
         fontFamily: FONT_FAMILY,
         fontSize: Math.max(8, Math.floor(w / 60)) + 'px',
         color: DIM_MAGENTA,
         align: 'center'
       }).setOrigin(0.5);
 
+      // --- HOW TO PLAY button ---
+      var howBtn = this.add.text(centerX, h * 0.93, '[ H ] HOW TO PLAY', {
+        fontFamily: FONT_FAMILY,
+        fontSize: Math.max(10, Math.floor(w / 48)) + 'px',
+        color: DIM_CYAN,
+        align: 'center'
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      howBtn.on('pointerdown', this._showRulesModal, this);
+
+      // --- Rules modal (hidden by default) ---
+      this._rulesModal = null;
+
       // --- Input handling ---
       this._enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
       this._leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
       this._rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+      this._hKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+      this._escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
       this._canInput = true;
     },
 
+    _showRulesModal: function () {
+      if (this._rulesModal) return;
+      this._canInput = false;
+
+      var w = this.cameras.main.width;
+      var h = this.cameras.main.height;
+      var cx = w / 2;
+      var cy = h / 2;
+      var self = this;
+
+      var container = this.add.container(0, 0).setDepth(200);
+      this._rulesModal = container;
+
+      // Dark overlay
+      var overlay = this.add.rectangle(cx, cy, w, h, 0x000000, 0.85).setInteractive();
+      overlay.on('pointerdown', function () { self._hideRulesModal(); });
+      container.add(overlay);
+
+      // Modal box
+      var boxW = w * 0.75;
+      var boxH = h * 0.7;
+      var box = this.add.rectangle(cx, cy, boxW, boxH, 0x0a0a1a, 0.95);
+      container.add(box);
+
+      // Neon border
+      var border = this.add.graphics();
+      border.lineStyle(2, 0xff00ff, 0.8);
+      border.strokeRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
+      border.lineStyle(1, 0x00ffff, 0.4);
+      border.strokeRect(cx - boxW / 2 + 3, cy - boxH / 2 + 3, boxW - 6, boxH - 6);
+      container.add(border);
+
+      var fs = Math.max(10, Math.floor(w / 46));
+      var headerFs = Math.max(14, Math.floor(w / 34));
+      var ty = cy - boxH / 2 + 30;
+
+      var title = this.add.text(cx, ty, 'HOW TO PLAY', {
+        fontFamily: FONT_FAMILY, fontSize: headerFs + 'px',
+        color: NEON_MAGENTA, fontStyle: 'bold', align: 'center'
+      }).setOrigin(0.5);
+      container.add(title);
+
+      ty += headerFs + 20;
+
+      var rules = [
+        { head: 'OBJECTIVE', body: 'Last player standing wins. Survive the void.' },
+        { head: 'BLACK HOLE', body: 'Center of the arena. Pulls everything in.\nContact = instant death. It grows over time.' },
+        { head: 'PLATFORMS', body: 'They collapse! Outer ones go first (~20s in).\nThe black hole eats platforms it touches.' },
+        { head: 'CHAOS EVENTS', body: 'Every ~20s a random event hits:\n- Gravity Surge: double pull for 4s\n- Blackout: lights out for 3s\n- Meteor Strike: destroys a platform\n- Event Horizon Flash: black hole doubles size\n- Vacuum Vent: wind pushes everyone' },
+        { head: 'CONTROLS', body: 'P1: WASD + Space  |  P2: Arrows + Enter\nP3: IJKL + H      |  P4: Numpad 8456 + 0' }
+      ];
+
+      for (var ri = 0; ri < rules.length; ri++) {
+        var r = rules[ri];
+        var headText = this.add.text(cx - boxW / 2 + 24, ty, r.head, {
+          fontFamily: FONT_FAMILY, fontSize: fs + 'px',
+          color: NEON_CYAN, fontStyle: 'bold'
+        });
+        container.add(headText);
+        ty += fs + 6;
+
+        var bodyText = this.add.text(cx - boxW / 2 + 24, ty, r.body, {
+          fontFamily: FONT_FAMILY, fontSize: (fs - 1) + 'px',
+          color: '#aaaacc', lineSpacing: 4,
+          wordWrap: { width: boxW - 48 }
+        });
+        container.add(bodyText);
+        ty += bodyText.height + 14;
+      }
+
+      // Close hint
+      var closeHint = this.add.text(cx, cy + boxH / 2 - 20, 'Press ESC or click outside to close', {
+        fontFamily: FONT_FAMILY, fontSize: (fs - 2) + 'px',
+        color: DIM_MAGENTA, align: 'center'
+      }).setOrigin(0.5);
+      container.add(closeHint);
+    },
+
+    _hideRulesModal: function () {
+      if (!this._rulesModal) return;
+      this._rulesModal.destroy();
+      this._rulesModal = null;
+      this._canInput = true;
+    },
+
     update: function () {
+      // Rules modal toggle
+      if (Phaser.Input.Keyboard.JustDown(this._hKey) && !this._rulesModal) {
+        this._showRulesModal();
+        return;
+      }
+      if (Phaser.Input.Keyboard.JustDown(this._escKey) && this._rulesModal) {
+        this._hideRulesModal();
+        return;
+      }
+      if (this._rulesModal) return; // block input while modal open
+
       // Player count selection with left/right arrows
       if (Phaser.Input.Keyboard.JustDown(this._leftKey)) {
         this.playerCount = Math.max(2, this.playerCount - 1);
@@ -253,6 +386,13 @@
       // Start game on Enter
       if (Phaser.Input.Keyboard.JustDown(this._enterKey) && this._canInput) {
         this._canInput = false;
+        // Remove hero sprite immediately via global ref
+        var heroImg = AP._menuHeroImg || this._heroImg;
+        if (heroImg) {
+          heroImg.style.display = 'none';
+          if (heroImg.parentNode) heroImg.parentNode.removeChild(heroImg);
+          AP._menuHeroImg = null;
+        }
         this.scene.start('GameScene', { playerCount: this.playerCount });
       }
     },
