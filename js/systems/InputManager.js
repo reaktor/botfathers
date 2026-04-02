@@ -38,30 +38,6 @@
         shoot: scene.input.keyboard.addKey(K.NUMPAD_ZERO)
       };
 
-      // P2: Arrows / Space (shoot)
-      controls[1] = {
-        left:  scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-        right: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-        jump:  scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-        shoot: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-      };
-
-      // P3: I / J / K / L / H (shoot)
-      controls[2] = {
-        left:  scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J),
-        right: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.L),
-        jump:  scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I),
-        shoot: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H)
-      };
-
-      // P4: Numpad 4 / 6 / 8 / 0 (shoot)
-      controls[3] = {
-        left:  scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.NUMPAD_FOUR),
-        right: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.NUMPAD_SIX),
-        jump:  scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.NUMPAD_EIGHT),
-        shoot: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO)
-      };
-
       return controls;
     }
   };
