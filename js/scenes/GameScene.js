@@ -283,6 +283,21 @@
       if (this.blackHole) {
         this.blackHole.update(time, delta);
 
+        // Black hole eats platforms it overlaps (Team 2 Phase 2.75 Agent A)
+        var bh = this.blackHole;
+        for (var pi2 = 0; pi2 < this._platformSprites.length; pi2++) {
+          var plat = this._platformSprites[pi2];
+          if (plat._collapseState === 'stable') {
+            var dx = bh.x - plat.x;
+            var dy = bh.y - plat.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var platHalfWidth = plat.displayWidth / 2;
+            if (dist < bh.radius + platHalfWidth) {
+              AP.PlatformCollapse.startCollapse(this, plat);
+            }
+          }
+        }
+
         // Kill zone check — instant death on contact for all players
         for (var k = 0; k < this.players.length; k++) {
           var pl = this.players[k];
