@@ -104,9 +104,11 @@
       });
 
       // --- Single centered character sprite (original colors, no tint) ---
-      var spriteTexture = AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback';
+      var hasCharSprite = this.textures.exists('char-idle');
+      var spriteTexture = hasCharSprite ? 'char-idle' : (AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback');
+      var spriteNativeSize = hasCharSprite ? 214 : (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
       var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
-      var spriteScale = spriteDisplaySize / (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
+      var spriteScale = spriteDisplaySize / spriteNativeSize;
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
 
       var heroSprite = this.add.image(centerX, spriteY, spriteTexture);
@@ -132,15 +134,26 @@
         ease: 'Sine.easeInOut'
       });
       // Cycle between idle and other poses if available
-      if (AP.botfatherLoaded) {
-        var poses = ['botfather-idle', 'botfather-run', 'botfather-idle', 'botfather-jump'];
+      if (hasCharSprite) {
+        var poses = ['char-idle', 'char-run', 'char-idle', 'char-jump', 'char-idle', 'char-attack'];
         var poseIdx = 0;
         this.time.addEvent({
-          delay: 800,
+          delay: 900,
           loop: true,
           callback: function () {
             poseIdx = (poseIdx + 1) % poses.length;
             if (heroSprite.scene) heroSprite.setTexture(poses[poseIdx]);
+          }
+        });
+      } else if (AP.botfatherLoaded) {
+        var poses2 = ['botfather-idle', 'botfather-run', 'botfather-idle', 'botfather-jump'];
+        var poseIdx2 = 0;
+        this.time.addEvent({
+          delay: 900,
+          loop: true,
+          callback: function () {
+            poseIdx2 = (poseIdx2 + 1) % poses2.length;
+            if (heroSprite.scene) heroSprite.setTexture(poses2[poseIdx2]);
           }
         });
       }
