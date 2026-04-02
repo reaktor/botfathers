@@ -568,7 +568,7 @@ Countdown (in GameScene):
 
 ---
 
-### Phase 2.75 — Chaos Wiring + Arena Variety + Branding (Team 2) `[NOT STARTED]`
+### Phase 2.75 — Chaos Wiring + Arena Variety + Branding (Team 2) `[DONE]`
 **Who:** Team 2 (while Teams 1 & 3 finish Phase 2 / early Phase 3)
 **Files:** Modify `GameScene.js`, `GravitySystem.js`, `BlackHole.js`, `config.js`, `SpriteFactory.js`, `MenuScene.js`
 
@@ -711,7 +711,14 @@ Branding (MenuScene.js):
 [2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
 [2026-04-02] Team 2 — Phase 2 complete (PR #2). Platform collapse + chaos events implemented. Vacuum Vent fixed to use delta-time. ChaosEventSystem uses flag-based isActive() API — no direct coupling to Phase 3 systems.
 [2026-04-02] Team 2 — Phase 2.5 complete (PR #4). MenuScene, GameOverScene, 3-2-1 countdown. Game flow: Boot → Menu → Game → GameOver → Menu.
-[2026-04-02] Team 2 — Phase 2.75 planned: wire chaos events into gravity/blackhole, procedural background generation, randomised hole/platform positions per match, rebrand to "BOTFATHERS".
+[2026-04-02] Team 2 — Phase 2.75 complete (PR #10):
+  - eventHorizonFlash wired into BlackHole (doubles size/kill zone temporarily via _baseRadius)
+  - Black hole eats platforms on overlap (triggers startCollapse)
+  - Randomised holes + platforms per match with reachability validation + minimum gap check
+  - Moving platforms (~60% per tier, sine wave oscillation)
+  - Full-screen procedural spaceship background (starfield, nebula, hull sections, conduits, emergency lights)
+  - Rebranded to "THE BOTFATHERS" / "GRAVITY WELL" / "In space, no one can hear you confess"
+  - Default 2 players, minimum 2
 [2026-04-02] Team 1 — Phase 1.5: Used existing botfather WebP sprites (214x214 single frames) for player characters instead of generating new PNGs. Tinted per player, scaled to 48px. Arena textures procedurally generated via Phaser Graphics API. Removed stale AP.PLAYER_SIZE constant (replaced by AP.PLAYER_RENDER_SIZE).
 
 ---

@@ -39,6 +39,14 @@
         plat.refreshBody();
         // Initialise collapse state (Team 2 Coder A)
         AP.PlatformCollapse.initCollapseState(plat, i);
+        // Mark moving platforms (Phase 2.75)
+        if (p.moving) {
+          plat._moving = true;
+          plat._moveOriginX = px;
+          plat._moveSpeed = p.moveSpeed * size;
+          plat._moveRange = p.moveRange * size;
+          plat._moveTime = Math.random() * Math.PI * 2; // random phase offset
+        }
         this._platformSprites.push(plat);
       }
 
@@ -101,7 +109,7 @@
     },
 
     _buildBackground: function (size) {
-      this.add.tileSprite(size / 2, size / 2, size, size, 'bg-panels');
+      this.add.image(size / 2, size / 2, 'bg-panels');
     },
 
     /**
@@ -283,6 +291,21 @@
       if (this.blackHole) {
         this.blackHole.update(time, delta);
 
+        // Black hole eats platforms it overlaps (Team 2 Phase 2.75 Agent A)
+        var bh = this.blackHole;
+        for (var pi2 = 0; pi2 < this._platformSprites.length; pi2++) {
+          var plat = this._platformSprites[pi2];
+          if (plat._collapseState === 'stable') {
+            var dx = bh.x - plat.x;
+            var dy = bh.y - plat.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var platHalfWidth = plat.displayWidth / 2;
+            if (dist < bh.radius + platHalfWidth) {
+              AP.PlatformCollapse.startCollapse(this, plat);
+            }
+          }
+        }
+
         // Kill zone check — instant death on contact for all players
         for (var k = 0; k < this.players.length; k++) {
           var pl = this.players[k];
@@ -367,6 +390,15 @@
       var children = this._platformSprites;
       for (var i = 0; i < children.length; i++) {
         var p = children[i];
+
+        // --- Moving platforms (Phase 2.75) ---
+        if (p._moving && p._collapseState === 'stable') {
+          p._moveTime += delta * 0.001;
+          var newX = p._moveOriginX + Math.sin(p._moveTime * p._moveSpeed * 10) * p._moveRange;
+          p.x = newX;
+          p.body.position.x = newX - p.body.width / 2;
+        }
+
         if (p._collapseState === 'warning') {
           p._collapseTimer += delta;
           p._flashTimer += delta;

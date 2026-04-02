@@ -20,60 +20,148 @@
       this._createPlayerFallback(scene);
     },
 
-    /** Dark industrial tile with grid lines and circuit traces. */
+    /**
+     * Procedural spaceship interior background — full screen, no tiling.
+     * Damaged hull with space visible through breaches, structural beams,
+     * conduits, emergency lighting. Unique every match.
+     */
     _createBackground: function (scene) {
+      var S = AP.gameSize;
       var g = scene.add.graphics();
-      var s = BG_TILE_SIZE;
 
-      // Base fill
-      g.fillStyle(AP.DARK_BASE, 1);
-      g.fillRect(0, 0, s, s);
+      // --- Deep space base ---
+      g.fillStyle(0x020206, 1);
+      g.fillRect(0, 0, S, S);
 
-      // Subtle grid lines
-      g.lineStyle(1, AP.GRID_LINE, 0.3);
-      // Vertical grid
-      for (var x = 0; x < s; x += 16) {
-        g.beginPath();
-        g.moveTo(x, 0);
-        g.lineTo(x, s);
-        g.strokePath();
-      }
-      // Horizontal grid
-      for (var y = 0; y < s; y += 16) {
-        g.beginPath();
-        g.moveTo(0, y);
-        g.lineTo(s, y);
-        g.strokePath();
+      // --- Starfield ---
+      var starColors = [0xffffff, 0xaaccff, 0xffeedd, 0x88aaff, 0xccddff];
+      var starCount = 150 + Math.floor(Math.random() * 100);
+      for (var si = 0; si < starCount; si++) {
+        var sx = Math.random() * S;
+        var sy = Math.random() * S;
+        var sc = starColors[Math.floor(Math.random() * starColors.length)];
+        var sa = 0.15 + Math.random() * 0.5;
+        var sr = Math.random() < 0.05 ? 2 : (Math.random() < 0.2 ? 1 : 0.5);
+        g.fillStyle(sc, sa);
+        g.fillCircle(sx, sy, sr);
       }
 
-      // Panel edge accents
-      g.lineStyle(1, AP.GRID_LINE, 0.5);
-      g.strokeRect(1, 1, s - 2, s - 2);
+      // --- Nebula clouds (large soft washes) ---
+      var nebColors = [0x1a0033, 0x001122, 0x0a0022, 0x000d1a, 0x120020];
+      var nebCount = 3 + Math.floor(Math.random() * 3);
+      for (var ni = 0; ni < nebCount; ni++) {
+        var nc = nebColors[Math.floor(Math.random() * nebColors.length)];
+        var nx = Math.random() * S;
+        var ny = Math.random() * S;
+        var nr = S * (0.15 + Math.random() * 0.25);
+        g.fillStyle(nc, 0.15 + Math.random() * 0.1);
+        g.fillCircle(nx, ny, nr);
+        g.fillStyle(nc, 0.06);
+        g.fillCircle(nx, ny, nr * 1.4);
+      }
 
-      // Circuit traces — diagonal details
-      g.lineStyle(1, AP.NEON_CYAN, 0.06);
-      g.beginPath();
-      g.moveTo(4, s * 0.7);
-      g.lineTo(s * 0.3, s * 0.7);
-      g.lineTo(s * 0.3, s * 0.4);
-      g.lineTo(s * 0.5, s * 0.4);
-      g.strokePath();
+      // --- Hull structure: large dark wall sections covering parts of the view ---
+      // These are irregular shapes that frame the space view
+      var wallColor = 0x08080e;
 
-      g.lineStyle(1, AP.NEON_MAGENTA, 0.06);
-      g.beginPath();
-      g.moveTo(s * 0.6, s * 0.2);
-      g.lineTo(s * 0.6, s * 0.5);
-      g.lineTo(s * 0.85, s * 0.5);
-      g.lineTo(s * 0.85, s * 0.8);
-      g.strokePath();
+      // Left wall section
+      var lww = S * (0.02 + Math.random() * 0.06);
+      g.fillStyle(wallColor, 0.9);
+      g.fillRect(0, 0, lww, S);
+      g.lineStyle(1, 0x181828, 0.6);
+      g.beginPath(); g.moveTo(lww, 0); g.lineTo(lww, S); g.strokePath();
 
-      // Small dot accents at circuit junctions
-      g.fillStyle(AP.NEON_CYAN, 0.1);
-      g.fillCircle(s * 0.3, s * 0.4, 2);
-      g.fillStyle(AP.NEON_MAGENTA, 0.1);
-      g.fillCircle(s * 0.6, s * 0.5, 2);
+      // Right wall section
+      var rww = S * (0.02 + Math.random() * 0.06);
+      g.fillStyle(wallColor, 0.9);
+      g.fillRect(S - rww, 0, rww, S);
+      g.lineStyle(1, 0x181828, 0.6);
+      g.beginPath(); g.moveTo(S - rww, 0); g.lineTo(S - rww, S); g.strokePath();
 
-      g.generateTexture('bg-panels', s, s);
+      // --- Structural beams (thick dark bars crossing the view) ---
+      var beamCount = 2 + Math.floor(Math.random() * 3);
+      for (var bi = 0; bi < beamCount; bi++) {
+        var bw = 3 + Math.floor(Math.random() * 6);
+        var bAlpha = 0.4 + Math.random() * 0.3;
+        g.fillStyle(0x0a0a14, bAlpha);
+        if (Math.random() > 0.4) {
+          // Horizontal beam
+          var by = Math.floor(Math.random() * S);
+          g.fillRect(0, by, S, bw);
+          // Highlight edge
+          g.lineStyle(1, 0x16162a, 0.3);
+          g.beginPath(); g.moveTo(0, by); g.lineTo(S, by); g.strokePath();
+        } else {
+          // Vertical beam
+          var bx = Math.floor(Math.random() * S);
+          g.fillRect(bx, 0, bw, S);
+          g.lineStyle(1, 0x16162a, 0.3);
+          g.beginPath(); g.moveTo(bx, 0); g.lineTo(bx, S); g.strokePath();
+        }
+      }
+
+      // --- Hull panels (scattered dark rectangles with edge detail) ---
+      var panelCount = 5 + Math.floor(Math.random() * 6);
+      for (var pli = 0; pli < panelCount; pli++) {
+        var plx = Math.floor(Math.random() * S);
+        var ply = Math.floor(Math.random() * S);
+        var plw = S * (0.05 + Math.random() * 0.15);
+        var plh = S * (0.03 + Math.random() * 0.1);
+        g.fillStyle(0x080810, 0.5 + Math.random() * 0.35);
+        g.fillRect(plx, ply, plw, plh);
+        g.lineStyle(1, 0x1a1a2e, 0.3 + Math.random() * 0.2);
+        g.strokeRect(plx, ply, plw, plh);
+        // Bolts at corners
+        g.fillStyle(0x222233, 0.4);
+        g.fillCircle(plx + 3, ply + 3, 1.5);
+        g.fillCircle(plx + plw - 3, ply + 3, 1.5);
+        g.fillCircle(plx + 3, ply + plh - 3, 1.5);
+        g.fillCircle(plx + plw - 3, ply + plh - 3, 1.5);
+      }
+
+      // --- Conduit runs (pipes that cross the hull) ---
+      var conduitColors = [0x12122a, 0x1a1133, 0x101828];
+      var conduitCount = 4 + Math.floor(Math.random() * 4);
+      for (var ci = 0; ci < conduitCount; ci++) {
+        var cw = 2 + Math.floor(Math.random() * 3);
+        var cc = conduitColors[Math.floor(Math.random() * conduitColors.length)];
+        g.lineStyle(cw, cc, 0.5 + Math.random() * 0.3);
+        // Conduits with bends (not just straight lines)
+        g.beginPath();
+        var cx = Math.random() * S;
+        var cy = Math.random() * S;
+        g.moveTo(cx, cy);
+        var segs = 2 + Math.floor(Math.random() * 3);
+        for (var cs = 0; cs < segs; cs++) {
+          if (cs % 2 === 0) {
+            cx += (Math.random() - 0.5) * S * 0.4;
+          } else {
+            cy += (Math.random() - 0.5) * S * 0.4;
+          }
+          cx = Math.max(0, Math.min(S, cx));
+          cy = Math.max(0, Math.min(S, cy));
+          g.lineTo(cx, cy);
+        }
+        g.strokePath();
+      }
+
+      // --- Emergency accent lights (small neon glows) ---
+      var accentColors = [AP.NEON_CYAN, AP.NEON_MAGENTA, 0xff3322, 0xffaa00];
+      var accentCount = 5 + Math.floor(Math.random() * 6);
+      for (var ai = 0; ai < accentCount; ai++) {
+        var ac = accentColors[Math.floor(Math.random() * accentColors.length)];
+        var ax = Math.random() * S;
+        var ay = Math.random() * S;
+        var ar = 4 + Math.random() * 8;
+        g.fillStyle(ac, 0.03 + Math.random() * 0.03);
+        g.fillCircle(ax, ay, ar * 3);
+        g.fillStyle(ac, 0.08 + Math.random() * 0.06);
+        g.fillCircle(ax, ay, ar);
+        g.fillStyle(ac, 0.2 + Math.random() * 0.15);
+        g.fillCircle(ax, ay, 2);
+      }
+
+      g.generateTexture('bg-panels', S, S);
       g.destroy();
     },
 

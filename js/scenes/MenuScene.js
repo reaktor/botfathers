@@ -32,22 +32,45 @@
         scanlineGfx.fillRect(0, sy, w, 2);
       }
 
-      // --- Title ---
-      var titleY = h * 0.08;
+      // --- Title (rebranded Phase 2.75 Agent B) ---
+      var titleY = h * 0.06;
 
-      var titleLine1 = this.add.text(centerX, titleY, 'ASTEROID PANIC', {
+      // Random holy-space taglines
+      var taglines = [
+        'In space, no one can hear you confess',
+        'Forgive me Father, for I have grav-sinned',
+        'Holy orders from the mothership',
+        'Bless this mess... of a space station',
+        'Thou shalt not covet thy neighbor\'s platform',
+        'The sermon will be brief. The void will not.',
+        'Ashes to ashes, dust to stardust',
+        'Our Father, who art in zero-G',
+        'First rule of Space Church: float or be floated',
+        'Delivering divine judgement at terminal velocity'
+      ];
+      var chosenTagline = 'In space, no one can hear you confess';
+
+      var titleLine1 = this.add.text(centerX, titleY, 'THE BOTFATHERS', {
         fontFamily: FONT_FAMILY,
-        fontSize: Math.max(20, Math.floor(w / 16)) + 'px',
+        fontSize: Math.max(24, Math.floor(w / 12)) + 'px',
         color: NEON_MAGENTA,
         fontStyle: 'bold',
         align: 'center'
       }).setOrigin(0.5);
 
-      var titleLine2 = this.add.text(centerX, titleY + titleLine1.height + 8, 'GRAVITY WELL', {
+      var titleLine2 = this.add.text(centerX, titleY + titleLine1.height + 6, 'GRAVITY WELL', {
         fontFamily: FONT_FAMILY,
         fontSize: Math.max(16, Math.floor(w / 20)) + 'px',
         color: NEON_CYAN,
         fontStyle: 'bold',
+        align: 'center'
+      }).setOrigin(0.5);
+
+      var tagline = this.add.text(centerX, titleY + titleLine1.height + titleLine2.height + 14, '"' + chosenTagline + '"', {
+        fontFamily: FONT_FAMILY,
+        fontSize: Math.max(10, Math.floor(w / 44)) + 'px',
+        color: '#888899',
+        fontStyle: 'italic',
         align: 'center'
       }).setOrigin(0.5);
 
@@ -70,8 +93,18 @@
         ease: 'Sine.easeInOut'
       });
 
+      // Subtle tagline pulse
+      this.tweens.add({
+        targets: tagline,
+        alpha: { from: 0.7, to: 0.4 },
+        duration: 2200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+
       // --- Decorative separator line ---
-      var separatorY = titleY + titleLine1.height + titleLine2.height + 24;
+      var separatorY = titleY + titleLine1.height + titleLine2.height + tagline.height + 28;
       var sepGfx = this.add.graphics();
       sepGfx.lineStyle(1, 0xff00ff, 0.5);
       sepGfx.lineBetween(w * 0.15, separatorY, w * 0.85, separatorY);
@@ -126,7 +159,7 @@
 
       // --- Player count selector ---
       var selectorY = sep2Y + 30;
-      this.playerCount = 4;
+      this.playerCount = 2;
 
       this.add.text(centerX, selectorY, '[ PLAYERS ]', {
         fontFamily: FONT_FAMILY,
@@ -145,7 +178,7 @@
         color: NEON_CYAN
       }).setOrigin(0.5);
 
-      this._playerCountText = this.add.text(centerX, selectorY, '4', {
+      this._playerCountText = this.add.text(centerX, selectorY, '2', {
         fontFamily: FONT_FAMILY,
         fontSize: arrowSize + 'px',
         color: '#ffffff',

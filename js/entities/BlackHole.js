@@ -19,6 +19,7 @@
       scene.add.existing(this);
 
       this.radius = BASE_RADIUS;
+      this._baseRadius = BASE_RADIUS;   // tracks growth independently of chaos multipliers
       this.pullStrength = BASE_PULL_STRENGTH;
       this._elapsed = 0;
       this._rotation = 0;
@@ -70,10 +71,17 @@
       var dt = delta / 1000;
       this._elapsed += dt;
 
-      // Passive growth (capped)
-      this.radius = Math.min(this.radius + GROWTH_PER_SECOND * dt, MAX_RADIUS);
+      // Passive growth (capped) — applied to base radius
+      this._baseRadius = Math.min(this._baseRadius + GROWTH_PER_SECOND * dt, MAX_RADIUS);
 
-      // Update pull strength — scales with radius
+      // Event Horizon Flash: temporarily double radius and kill zone while active
+      var chaosMultiplier = 1;
+      if (this.scene.chaosSystem && this.scene.chaosSystem.isActive('eventHorizonFlash')) {
+        chaosMultiplier = 2;
+      }
+      this.radius = this._baseRadius * chaosMultiplier;
+
+      // Update pull strength — scales with current (possibly boosted) radius
       this.pullStrength = BASE_PULL_STRENGTH * (this.radius / BASE_RADIUS);
 
       // Spin — faster as it grows (angrier)
@@ -93,7 +101,7 @@
     },
 
     feedBullet: function () {
-      this.radius = Math.min(this.radius + FEED_GROWTH, MAX_RADIUS);
+      this._baseRadius = Math.min(this._baseRadius + FEED_GROWTH, MAX_RADIUS);
     },
 
     isInKillZone: function (px, py) {
