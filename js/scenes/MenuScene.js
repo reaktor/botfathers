@@ -48,7 +48,7 @@
         'First rule of Space Church: float or be floated',
         'Delivering divine judgement at terminal velocity'
       ];
-      var chosenTagline = taglines[Math.floor(Math.random() * taglines.length)];
+      var chosenTagline = 'In space, no one can hear you confess';
 
       var titleLine1 = this.add.text(centerX, titleY, 'THE BOTFATHERS', {
         fontFamily: FONT_FAMILY,
