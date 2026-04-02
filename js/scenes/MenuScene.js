@@ -104,9 +104,8 @@
       });
 
       // --- Single centered character sprite (original colors, no tint) ---
-      var hasCharSprite = this.textures.exists('char-idle');
-      var spriteTexture = hasCharSprite ? 'char-idle' : (AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback');
-      var spriteNativeSize = hasCharSprite ? 214 : (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
+      var spriteTexture = 'char-idle';
+      var spriteNativeSize = 214;
       var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
       var spriteScale = spriteDisplaySize / spriteNativeSize;
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
