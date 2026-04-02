@@ -32,22 +32,29 @@
         scanlineGfx.fillRect(0, sy, w, 2);
       }
 
-      // --- Title ---
-      var titleY = h * 0.08;
+      // --- Title (rebranded Phase 2.75 Agent B) ---
+      var titleY = h * 0.06;
 
-      var titleLine1 = this.add.text(centerX, titleY, 'ASTEROID PANIC', {
+      var titleLine1 = this.add.text(centerX, titleY, 'BOTFATHERS', {
         fontFamily: FONT_FAMILY,
-        fontSize: Math.max(20, Math.floor(w / 16)) + 'px',
+        fontSize: Math.max(24, Math.floor(w / 12)) + 'px',
         color: NEON_MAGENTA,
         fontStyle: 'bold',
         align: 'center'
       }).setOrigin(0.5);
 
-      var titleLine2 = this.add.text(centerX, titleY + titleLine1.height + 8, 'GRAVITY WELL', {
+      var titleLine2 = this.add.text(centerX, titleY + titleLine1.height + 6, 'GRAVITY WELL', {
         fontFamily: FONT_FAMILY,
         fontSize: Math.max(16, Math.floor(w / 20)) + 'px',
         color: NEON_CYAN,
         fontStyle: 'bold',
+        align: 'center'
+      }).setOrigin(0.5);
+
+      var tagline = this.add.text(centerX, titleY + titleLine1.height + titleLine2.height + 14, 'A Cyberpunk Arena Brawl', {
+        fontFamily: FONT_FAMILY,
+        fontSize: Math.max(10, Math.floor(w / 40)) + 'px',
+        color: '#888899',
         align: 'center'
       }).setOrigin(0.5);
 
@@ -70,8 +77,18 @@
         ease: 'Sine.easeInOut'
       });
 
+      // Subtle tagline pulse
+      this.tweens.add({
+        targets: tagline,
+        alpha: { from: 0.7, to: 0.4 },
+        duration: 2200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+
       // --- Decorative separator line ---
-      var separatorY = titleY + titleLine1.height + titleLine2.height + 24;
+      var separatorY = titleY + titleLine1.height + titleLine2.height + tagline.height + 28;
       var sepGfx = this.add.graphics();
       sepGfx.lineStyle(1, 0xff00ff, 0.5);
       sepGfx.lineBetween(w * 0.15, separatorY, w * 0.85, separatorY);
