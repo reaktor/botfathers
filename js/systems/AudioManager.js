@@ -115,7 +115,7 @@
         pitchDecay: 0.01,
         octaves: 4,
         envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.05 }
-      }).connect(new Tone.Volume(0).connect(output));
+      }).connect(new Tone.Volume(6).connect(output));
     },
 
     /** Play jump sound effect. Called from Player.js on jump. */
