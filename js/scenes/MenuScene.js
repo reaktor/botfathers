@@ -133,30 +133,7 @@
         repeat: -1,
         ease: 'Sine.easeInOut'
       });
-      // Cycle between idle and other poses if available
-      if (hasCharSprite) {
-        var poses = ['char-idle', 'char-run', 'char-idle', 'char-jump', 'char-idle', 'char-attack'];
-        var poseIdx = 0;
-        this.time.addEvent({
-          delay: 900,
-          loop: true,
-          callback: function () {
-            poseIdx = (poseIdx + 1) % poses.length;
-            if (heroSprite.scene) heroSprite.setTexture(poses[poseIdx]);
-          }
-        });
-      } else if (AP.botfatherLoaded) {
-        var poses2 = ['botfather-idle', 'botfather-run', 'botfather-idle', 'botfather-jump'];
-        var poseIdx2 = 0;
-        this.time.addEvent({
-          delay: 900,
-          loop: true,
-          callback: function () {
-            poseIdx2 = (poseIdx2 + 1) % poses2.length;
-            if (heroSprite.scene) heroSprite.setTexture(poses2[poseIdx2]);
-          }
-        });
-      }
+      // Just idle — bob + breathing is enough
 
       // --- Decorative separator line ---
       var separatorY = spriteY + spriteDisplaySize / 2 + 12;
