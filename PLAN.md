@@ -516,7 +516,7 @@ All coders work in parallel. Managers review after coders commit.
 
 ---
 
-### Phase 2.5 — UI & Onboarding (Team 2 bonus) `[IN PROGRESS]`
+### Phase 2.5 — UI & Onboarding (Team 2 bonus) `[DONE]`
 **Who:** Team 2 (while Teams 1 & 3 finish Phase 2)
 **Files:** Create `MenuScene.js`, `GameOverScene.js`; modify `BootScene.js`, `GameScene.js` (countdown only), `config.js` (scene list), `index.html` (script tags)
 
@@ -564,6 +564,78 @@ Countdown (in GameScene):
 - Players visible but input disabled during countdown
 - "GO!" text fades out, gameplay begins
 - Use Phaser time events, not raw timers
+```
+
+---
+
+### Phase 2.75 — Chaos Wiring + Arena Variety + Branding (Team 2) `[NOT STARTED]`
+**Who:** Team 2 (while Teams 1 & 3 finish Phase 2 / early Phase 3)
+**Files:** Modify `GameScene.js`, `GravitySystem.js`, `BlackHole.js`, `config.js`, `SpriteFactory.js`, `MenuScene.js`
+
+#### Agent A — Event Horizon Flash + Black Hole Eats Platforms
+Wire remaining chaos flag into BlackHole + add platform-eating overlap.
+NOTE: gravitySurge → GravitySystem is ALREADY DONE by Team 3 (GravitySystem.js:68-71). Do NOT duplicate.
+
+```
+FILES YOU OWN:
+- js/entities/BlackHole.js (add eventHorizonFlash check)
+- js/scenes/GameScene.js (add black hole ↔ platform overlap in update loop)
+
+Spec:
+- BlackHole.update(): check if scene.chaosSystem exists and isActive('eventHorizonFlash')
+  - If active: temporarily double the visual radius and kill zone radius for that frame
+  - When event ends, radius returns to normal (don't permanently grow)
+  - Access chaos system via: this.scene.chaosSystem.isActive('eventHorizonFlash')
+- GameScene.update(): after blackHole.update(), loop over this._platformSprites
+  - For each active (non-collapsed) platform, check if blackHole overlaps it
+  - Use distance check between blackHole center and platform center vs blackHole.radius + platform half-width
+  - If overlapping: call AP.PlatformCollapse.startCollapse(this, plat)
+  - This makes the black hole "eat" platforms it drifts into
+- All changes must be additive — don't break existing blackhole behaviour
+- Do NOT touch GravitySystem.js (gravitySurge already wired by Team 3)
+```
+
+#### Agent B — Procedural Arena + Branding
+Make each match feel different and brand the game.
+
+```
+FILES YOU OWN:
+- js/config.js (randomise hole positions + platform layout per game load)
+- js/utils/SpriteFactory.js (procedural cyberpunk gothic background)
+- js/scenes/MenuScene.js (update title branding)
+
+Spec:
+Randomised Arena (config.js):
+- On each game load, randomise AP.HOLES positions:
+  - Always 2 holes in floor/ceiling, but randomise their x position (keep width ~0.12)
+  - Constrain: holes must be at least 0.25 apart, not at extreme edges (0.05-0.83 range)
+- Randomise platform positions each load:
+  - Keep 9 platforms in 3 tiers (3 bottom ~0.75-0.90, 3 mid ~0.40-0.60, 3 top ~0.10-0.25)
+  - Randomise x positions within each tier, spread across left/center/right zones
+  - Randomise y within tier range (+/- small offset)
+  - CRITICAL reachability constraint: every platform must be jumpable from at least one other platform or the floor
+    - Max vertical gap between reachable surfaces must be <= jump height (AP.JUMP_VELOCITY = -350, so roughly 0.18 * gameSize vertical reach)
+    - No platform should be isolated with no way to reach it
+    - Validate layout after generation: for each platform, check that at least one lower surface exists within jump range (vertical) and walk range (horizontal, accounting for screen wrap)
+    - If validation fails, regenerate
+  - Randomise widths slightly (0.20-0.40 range) but ensure total coverage gives enough landing area
+
+Procedural Background (SpriteFactory.js):
+- Generate a cyberpunk gothic space station background using canvas:
+  - Dark base (#0a0a12) with subtle grid lines
+  - Random vertical/horizontal pipes and conduits (dim purple/blue, 1-3px wide)
+  - Scattered circuit-trace patterns (thin neon lines with 90° turns)
+  - Occasional panel edges / rivet dots
+  - Faint glow spots in magenta/cyan at random positions
+  - Overall feel: wrecked space station interior, dark and industrial
+- Generate as a Phaser texture in createTextures(), tile across arena in GameScene
+- Regenerate each game load so every match looks slightly different
+
+Branding (MenuScene.js):
+- Update game title to: "BOTFATHERS" as main title (large, neon magenta)
+- Subtitle: "GRAVITY WELL" (smaller, neon cyan)
+- Add tagline below: "A Cyberpunk Arena Brawl" (small, dim white)
+- Keep existing controls display and player count selector
 ```
 
 ---
@@ -638,6 +710,8 @@ Countdown (in GameScene):
 [2026-04-02] User — Added Phase 1.5: cyberpunk arena visual overhaul + Tone.js background music. Neon-edged platforms, industrial background, bright cyberpunk theme. Background track and ambient audio pulled forward from Phase 4.
 [2026-04-02] User — Switched from procedural-only sprites to SpriteCook-generated PNGs in `assets/`. SpriteFactory keeps procedural fallbacks for dev. Assets loaded via Phaser preload in BootScene.
 [2026-04-02] Team 2 — Phase 2 complete (PR #2). Platform collapse + chaos events implemented. Vacuum Vent fixed to use delta-time. ChaosEventSystem uses flag-based isActive() API — no direct coupling to Phase 3 systems.
+[2026-04-02] Team 2 — Phase 2.5 complete (PR #4). MenuScene, GameOverScene, 3-2-1 countdown. Game flow: Boot → Menu → Game → GameOver → Menu.
+[2026-04-02] Team 2 — Phase 2.75 planned: wire chaos events into gravity/blackhole, procedural background generation, randomised hole/platform positions per match, rebrand to "BOTFATHERS".
 [2026-04-02] Team 1 — Phase 1.5: Used existing botfather WebP sprites (214x214 single frames) for player characters instead of generating new PNGs. Tinted per player, scaled to 48px. Arena textures procedurally generated via Phaser Graphics API. Removed stale AP.PLAYER_SIZE constant (replaced by AP.PLAYER_RENDER_SIZE).
 
 ---
