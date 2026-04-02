@@ -55,11 +55,29 @@
         return AP.PlatformCollapse.getActivePlatforms(platformGroup);
       };
 
-      // --- Player ---
-      this.player = new AP.Player(this, size * 0.5, size * 0.7, 0);
+      // --- Players ---
+      var playerCount = (this.scene.settings.data && this.scene.settings.data.playerCount) || 4;
+      this.players = [];
+      this.playerCount = playerCount;
 
-      // Player collides with platforms
-      this.physics.add.collider(this.player, this.platforms);
+      // Spawn positions — 4 corners
+      var margin = size * 0.12;
+      var spawnPoints = [
+        { x: margin,        y: size * 0.8 },          // top-left area
+        { x: size - margin, y: size * 0.8 },          // top-right area
+        { x: margin,        y: size * 0.15 },         // bottom-left area
+        { x: size - margin, y: size * 0.15 }          // bottom-right area
+      ];
+
+      for (var pi = 0; pi < playerCount; pi++) {
+        var sp = spawnPoints[pi];
+        var p = new AP.Player(this, sp.x, sp.y, pi);
+        this.physics.add.collider(p, this.platforms);
+        this.players.push(p);
+      }
+
+      // Keep backwards compat — this.player points to P1
+      this.player = this.players[0];
 
       // Store for update
       this.boundaryThickness = BOUNDARY_THICKNESS;
@@ -114,20 +132,20 @@
       countdownText.setOrigin(0.5);
       countdownText.setDepth(1000);
 
-      // "3" shows for 1 second, then "2"
-      this.time.delayedCall(1000, function () {
+      // "3" shows for 0.4s, then "2"
+      this.time.delayedCall(400, function () {
         countdownText.setText('2');
         countdownText.setColor('#ff00ff');
       });
 
-      // "2" shows for 1 second, then "1"
-      this.time.delayedCall(2000, function () {
+      // "2" shows for 0.4s, then "1"
+      this.time.delayedCall(800, function () {
         countdownText.setText('1');
         countdownText.setColor('#ff8800');
       });
 
-      // "1" shows for 1 second, then "GO!"
-      this.time.delayedCall(3000, function () {
+      // "1" shows for 0.4s, then "GO!"
+      this.time.delayedCall(1200, function () {
         countdownText.setText('GO!');
         countdownText.setColor('#00ff66');
         countdownText.setFontSize(Math.floor(size * 0.18) + 'px');
@@ -156,14 +174,8 @@
     setupGravity: function () {
       AP.GravitySystem.reset();
 
-      if (this.player) {
-        AP.GravitySystem.addBody(this.player);
-      }
-
-      if (this.players) {
-        for (var i = 0; i < this.players.length; i++) {
-          AP.GravitySystem.addBody(this.players[i]);
-        }
+      for (var i = 0; i < this.players.length; i++) {
+        AP.GravitySystem.addBody(this.players[i]);
       }
     },
 
@@ -245,15 +257,20 @@
     update: function (time, delta) {
       // Skip all gameplay logic while countdown is active (Phase 2.5)
       if (this._countdownActive) return;
+      if (this._gameOver) return;
 
-      if (this.player && this.player.active) {
-        this.player.handleInput(
-          this.controls[0],
-          delta,
-          AP.HOLES,
-          AP.gameSize,
-          this.boundaryThickness
-        );
+      // Handle input for all alive players
+      for (var i = 0; i < this.players.length; i++) {
+        var p = this.players[i];
+        if (p.active) {
+          p.handleInput(
+            this.controls[i],
+            delta,
+            AP.HOLES,
+            AP.gameSize,
+            this.boundaryThickness
+          );
+        }
       }
 
       // Gravity after input so pull accumulates when idle
@@ -266,15 +283,39 @@
       if (this.blackHole) {
         this.blackHole.update(time, delta);
 
-        // Kill zone check — instant death on contact
-        if (this.player && this.player.active &&
-            this.blackHole.isInKillZone(this.player.x, this.player.y)) {
-          if (typeof this.player.eliminate === 'function') {
-            this.player.eliminate();
-          } else {
-            this.player.setActive(false).setVisible(false);
+        // Kill zone check — instant death on contact for all players
+        for (var k = 0; k < this.players.length; k++) {
+          var pl = this.players[k];
+          if (pl.active && this.blackHole.isInKillZone(pl.x, pl.y)) {
+            if (typeof pl.eliminate === 'function') {
+              pl.eliminate();
+            } else {
+              pl.setActive(false).setVisible(false);
+            }
           }
         }
+      }
+
+      this.checkWinCondition();
+    },
+
+    checkWinCondition: function () {
+      var alive = [];
+      for (var i = 0; i < this.players.length; i++) {
+        if (this.players[i].active) {
+          alive.push(i);
+        }
+      }
+
+      if (alive.length <= 1) {
+        this._gameOver = true;
+        var winner = alive.length === 1 ? alive[0] : 0;
+
+        // Short delay before showing game over
+        var self = this;
+        this.time.delayedCall(1000, function () {
+          self.scene.start('GameOverScene', { winner: winner });
+        });
       }
     },
 
