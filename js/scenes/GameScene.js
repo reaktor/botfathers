@@ -198,6 +198,10 @@
       // Pause physics so players are visible but frozen
       this.physics.pause();
 
+      // Hide all sprite overlays during countdown
+      var overlays = document.querySelectorAll('.ap-sprite-overlay');
+      for (var hi = 0; hi < overlays.length; hi++) overlays[hi].style.display = 'none';
+
       // Track whether countdown is active (other systems can check this)
       this._countdownActive = true;
 
@@ -240,6 +244,9 @@
             countdownText.destroy();
             self._countdownActive = false;
             self.physics.resume();
+            // Show sprite overlays now that gameplay starts
+            var ols = document.querySelectorAll('.ap-sprite-overlay');
+            for (var si = 0; si < ols.length; si++) ols[si].style.display = '';
           }
         });
       });
