@@ -277,6 +277,10 @@
       if (this._rulesModal) return;
       this._canInput = false;
 
+      // Hide DOM hero overlay so it doesn't render on top of the modal
+      var heroImg = AP._menuHeroImg || this._heroImg;
+      if (heroImg) heroImg.style.display = 'none';
+
       var w = this.cameras.main.width;
       var h = this.cameras.main.height;
       var cx = w / 2;
@@ -356,6 +360,10 @@
       this._rulesModal.destroy();
       this._rulesModal = null;
       this._canInput = true;
+
+      // Restore DOM hero overlay
+      var heroImg = AP._menuHeroImg || this._heroImg;
+      if (heroImg) heroImg.style.display = '';
     },
 
     update: function () {
