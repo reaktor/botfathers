@@ -109,7 +109,7 @@
 
     applyKnockback: function (dirX, force) {
       this.body.setVelocityX(dirX * force);
-      this.body.setVelocityY(-force * 0.1);
+      // No vertical component — only push in the hit direction
       this._knockbackTimer = 300; // invulnerable for 0.3s
     },
 

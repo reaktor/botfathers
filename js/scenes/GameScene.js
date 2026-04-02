@@ -193,7 +193,7 @@
       if (playerA.isKnockbackActive() || playerB.isKnockbackActive()) return;
 
       var STOMP_ZONE = 0.25; // top 25% of sprite = stomp zone
-      var KNOCKBACK_FORCE = 700;
+      var KNOCKBACK_FORCE = 2100;
 
       // Check head stomp: is one player falling onto the other?
       var aBottom = playerA.y + playerA.displayHeight / 2;
