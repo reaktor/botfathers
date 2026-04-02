@@ -349,7 +349,7 @@ Spec:
 Commit when done. Update PLAN.md decisions log if you deviate.
 ```
 
-#### Team 3 Manager (Johan) — Review
+#### Team 3 Manager — Review
 ```
 Read PLAN.md and docs/gameplay.md first. You are Team 3 Manager.
 
@@ -461,7 +461,7 @@ update(time, delta) {
 |------|---------|---------|---------|
 | Team 1 | Bullets + combat | Powerups | Reviews both |
 | Team 2 | Platform collapse | Chaos events | Reviews both |
-| Team 3 (Johan) | Black hole entity | Gravity system | Reviews both |
+| Team 3 | Black hole entity | Gravity system | Reviews both |
 
 All coders work in parallel. Managers review after coders commit.
 
