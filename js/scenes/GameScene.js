@@ -60,6 +60,70 @@
 
       // --- Chaos event system (Team 2 Coder B) ---
       this.setupChaos();
+
+      // --- Countdown before gameplay begins (Team 2 Agent B — Phase 2.5) ---
+      this._startCountdown();
+    },
+
+    /**
+     * _startCountdown() — 3-2-1-GO! countdown at match start.
+     * Pauses physics during countdown, resumes after "GO!" fades.
+     * Uses Phaser time events (this.time.delayedCall).
+     */
+    _startCountdown: function () {
+      var self = this;
+      var size = AP.gameSize;
+      var cx = size / 2;
+      var cy = size / 2;
+
+      // Pause physics so players are visible but frozen
+      this.physics.pause();
+
+      // Track whether countdown is active (other systems can check this)
+      this._countdownActive = true;
+
+      // Create countdown text — large, centered, monospace, neon cyan
+      var countdownText = this.add.text(cx, cy, '3', {
+        fontFamily: '"Courier New", Courier, monospace',
+        fontSize: Math.floor(size * 0.2) + 'px',
+        color: '#00ffff',
+        fontStyle: 'bold',
+        align: 'center'
+      });
+      countdownText.setOrigin(0.5);
+      countdownText.setDepth(1000);
+
+      // "3" shows for 1 second, then "2"
+      this.time.delayedCall(1000, function () {
+        countdownText.setText('2');
+        countdownText.setColor('#ff00ff');
+      });
+
+      // "2" shows for 1 second, then "1"
+      this.time.delayedCall(2000, function () {
+        countdownText.setText('1');
+        countdownText.setColor('#ff8800');
+      });
+
+      // "1" shows for 1 second, then "GO!"
+      this.time.delayedCall(3000, function () {
+        countdownText.setText('GO!');
+        countdownText.setColor('#00ff66');
+        countdownText.setFontSize(Math.floor(size * 0.18) + 'px');
+
+        // "GO!" fades out over 0.5s, then resume gameplay
+        self.tweens.add({
+          targets: countdownText,
+          alpha: 0,
+          duration: 500,
+          ease: 'Power2',
+          onComplete: function () {
+            countdownText.destroy();
+            self._countdownActive = false;
+            self.physics.resume();
+          }
+        });
+      });
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -89,6 +153,9 @@
     },
 
     update: function (time, delta) {
+      // Skip all gameplay logic while countdown is active (Phase 2.5)
+      if (this._countdownActive) return;
+
       if (this.player && this.player.active) {
         this.player.handleInput(
           this.controls[0],
