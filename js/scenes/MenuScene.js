@@ -103,12 +103,13 @@
         ease: 'Sine.easeInOut'
       });
 
-      // --- Animated character sprite (DOM element so browser plays animated WebP) ---
+      // --- Animated character sprite (DOM img with base64 animated WebP) ---
       var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
 
       var img = document.createElement('img');
-      img.src = 'assets/botfather/character_idle.webp';
+      // Use base64 data URI so it works on file:// AND plays the animation
+      img.src = (AP.BOTFATHER_DATA && AP.BOTFATHER_DATA.idle) || 'assets/botfather/character_idle.webp';
       img.style.width = spriteDisplaySize + 'px';
       img.style.height = spriteDisplaySize + 'px';
       img.style.imageRendering = 'pixelated';
