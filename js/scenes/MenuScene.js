@@ -388,6 +388,10 @@
       // Start game on Enter
       if (Phaser.Input.Keyboard.JustDown(this._enterKey) && this._canInput) {
         this._canInput = false;
+        // Remove hero sprite immediately
+        if (this._heroImg && this._heroImg.parentNode) {
+          this._heroImg.parentNode.removeChild(this._heroImg);
+        }
         this.scene.start('GameScene', { playerCount: this.playerCount });
       }
     },
