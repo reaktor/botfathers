@@ -124,6 +124,73 @@
         this.y = gameSize - boundaryThickness;
         this.body.setVelocityY(0);
       }
+    },
+
+    /**
+     * eliminate() — kill this player with a death particle burst.
+     * Spawns 20 small rectangles in the player's color that fly outward
+     * and fade over ~0.6s, then cleans them up.
+     * Also triggers camera shake via the scene.
+     */
+    eliminate: function () {
+      if (!this.active) return;
+
+      var px = this.x;
+      var py = this.y;
+      var color = AP.PLAYER_COLORS[this.playerIndex] || AP.PLAYER_COLORS[0];
+      var scene = this.scene;
+
+      // Deactivate the player
+      this.setActive(false).setVisible(false);
+      if (this.body) {
+        this.body.setVelocity(0, 0);
+        this.body.enable = false;
+      }
+
+      // Camera shake — brief 150ms, low intensity
+      if (scene.cameras && scene.cameras.main) {
+        scene.cameras.main.shake(150, 0.008);
+      }
+
+      // Death SFX
+      if (AP.AudioManager && AP.AudioManager.playDeath) {
+        AP.AudioManager.playDeath();
+      }
+
+      // Spawn death particles — 20 small rectangles flying outward
+      var particleCount = 20;
+      var particles = [];
+
+      for (var i = 0; i < particleCount; i++) {
+        var size = 2 + Math.random() * 4;
+        var gfx = scene.add.graphics();
+        gfx.fillStyle(color, 1);
+        gfx.fillRect(-size / 2, -size / 2, size, size);
+        gfx.setPosition(px, py);
+        gfx.setDepth(500);
+        particles.push(gfx);
+
+        // Random outward direction
+        var angle = (Math.PI * 2 / particleCount) * i + (Math.random() - 0.5) * 0.6;
+        var speed = 80 + Math.random() * 120;
+        var targetX = px + Math.cos(angle) * speed;
+        var targetY = py + Math.sin(angle) * speed;
+        var duration = 500 + Math.random() * 200;
+
+        scene.tweens.add({
+          targets: gfx,
+          x: targetX,
+          y: targetY,
+          alpha: 0,
+          scaleX: 0.2,
+          scaleY: 0.2,
+          duration: duration,
+          ease: 'Power2',
+          onComplete: function (tween, targets) {
+            targets[0].destroy();
+          }
+        });
+      }
     }
   });
 })();

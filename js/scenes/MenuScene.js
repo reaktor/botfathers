@@ -103,8 +103,34 @@
         ease: 'Sine.easeInOut'
       });
 
+      // --- Character sprites row ---
+      var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + 38;
+      var spriteTexture = AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback';
+      var spriteScale = (AP.PLAYER_RENDER_SIZE * 2.5) / (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
+      var spriteSpacing = w / 5; // divide width into 5 slots so 4 sprites are evenly spaced
+      var spriteColors = AP.PLAYER_COLORS;
+
+      for (var ci = 0; ci < 4; ci++) {
+        var sx = spriteSpacing * (ci + 1);
+        var sprite = this.add.image(sx, spriteY, spriteTexture);
+        sprite.setScale(spriteScale);
+        sprite.setTint(spriteColors[ci]);
+        sprite.setOrigin(0.5);
+
+        // Gentle floating bob animation, staggered per character
+        this.tweens.add({
+          targets: sprite,
+          y: spriteY - 6,
+          duration: 1200 + ci * 200,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+          delay: ci * 150
+        });
+      }
+
       // --- Decorative separator line ---
-      var separatorY = titleY + titleLine1.height + titleLine2.height + tagline.height + 28;
+      var separatorY = spriteY + (AP.PLAYER_RENDER_SIZE * 2.5) / 2 + 16;
       var sepGfx = this.add.graphics();
       sepGfx.lineStyle(1, 0xff00ff, 0.5);
       sepGfx.lineBetween(w * 0.15, separatorY, w * 0.85, separatorY);
