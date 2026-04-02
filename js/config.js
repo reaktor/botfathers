@@ -56,6 +56,6 @@
 
 // Boot the game after all scripts have loaded
 window.addEventListener('load', function () {
-  AP.config.scene = [AP.BootScene, AP.GameScene, AP.GameOverScene];
+  AP.config.scene = [AP.BootScene, AP.MenuScene, AP.GameScene, AP.GameOverScene];
   AP.game = new Phaser.Game(AP.config);
 });
