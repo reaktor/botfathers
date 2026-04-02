@@ -104,6 +104,9 @@
       // --- Bullets + combat (Team 1 Coder A) ---
       this.setupBullets();
 
+      // --- Powerup system (Team 1 Coder B) ---
+      this.setupPowerups();
+
       // --- Chaos event system (Team 2 Coder B) ---
       this.setupChaos();
 
@@ -290,6 +293,7 @@
       // Bullets (Team 1 Coder A)
       this.updateBullets(delta);
 
+      this.updatePowerups(delta);
       this.updatePlatforms(delta);
       this.updateChaos(time, delta);
 
@@ -405,6 +409,70 @@
           self.scene.start('GameOverScene', { winner: winner });
         });
       }
+      }
+    },
+
+    // --- Team 1 Coder B: Powerups ---
+
+    setupPowerups: function () {
+      // Create the powerup spawner
+      this.powerupSpawner = new AP.PowerupSpawner(this, this.platforms);
+
+      // Setup overlap detection between player(s) and spawned powerups.
+      // We use a per-frame manual check since powerups are created dynamically
+      // and aren't in a single Arcade group with fixed membership.
+    },
+
+    updatePowerups: function (delta) {
+      if (!this.powerupSpawner) return;
+
+      // Update spawner (handles spawn timers + per-powerup animation)
+      this.powerupSpawner.update(delta);
+
+      // Collect all players into an array (supports both single and multi-player)
+      var players = this.players || (this.player ? [this.player] : []);
+
+      // Check pickup overlaps
+      var activePowerups = this.powerupSpawner.activePowerups;
+      for (var i = activePowerups.length - 1; i >= 0; i--) {
+        var powerup = activePowerups[i];
+        if (!powerup || !powerup.active) continue;
+
+        for (var j = 0; j < players.length; j++) {
+          var player = players[j];
+          if (!player || !player.active) continue;
+
+          // Simple distance-based overlap check
+          var dx = player.x - powerup.x;
+          var dy = player.y - powerup.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var pickupRange = AP.Powerup.RADIUS + AP.PLAYER_HITBOX_W / 2;
+
+          if (dist < pickupRange) {
+            player.pickupPowerup(powerup.typeKey);
+            powerup.consume();
+            break;  // powerup consumed, move to next
+          }
+        }
+      }
+
+      // Update powerup duration timers for all players
+      for (var k = 0; k < players.length; k++) {
+        var p = players[k];
+        if (!p || !p.active || !p._powerupType) continue;
+
+        // Update glow position to follow player
+        if (p._powerupGlow && p._powerupGlow.active) {
+          p._powerupGlow.setPosition(p.x, p.y);
+        }
+
+        // Duration countdown (skip for -1 which means "until consumed/hit")
+        if (p._powerupTimeLeft > 0) {
+          p._powerupTimeLeft -= delta;
+          if (p._powerupTimeLeft <= 0) {
+            p.clearPowerup();
+          }
+        }
       }
     },
 

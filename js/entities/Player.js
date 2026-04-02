@@ -106,6 +106,62 @@
       }
     },
 
+    // --- Powerup methods (Team 1 Coder B) ---
+
+    /**
+     * Pick up a powerup by type key. Replaces any currently held powerup.
+     * Does NOT apply gameplay effects (Phase 3) — just tracks the held type
+     * and starts the duration timer.
+     * @param {string} typeKey — e.g. 'rapid_fire', 'shield'
+     */
+    pickupPowerup: function (typeKey) {
+      // Clear any existing powerup first
+      this.clearPowerup();
+
+      var typeData = AP.Powerup.getTypeData(typeKey);
+      if (!typeData) return;
+
+      this._powerupType = typeKey;
+      this._powerupTimeLeft = typeData.duration;  // -1 means lasts until used/hit
+
+      // Visual feedback: add a subtle tint overlay matching powerup color
+      this._powerupGlow = this.scene.add.circle(this.x, this.y, AP.PLAYER_RENDER_SIZE * 0.6, typeData.color, 0.25);
+      this._powerupGlow.setDepth(this.depth - 1);
+    },
+
+    /**
+     * Drop the currently held powerup into the world (called on player death).
+     * Returns the dropped Powerup entity, or null if none held.
+     * @returns {AP.Powerup|null}
+     */
+    dropPowerup: function () {
+      if (!this._powerupType) return null;
+
+      var typeKey = this._powerupType;
+      this.clearPowerup();
+
+      // Create a new powerup entity at the player's position
+      var dropped = new AP.Powerup(this.scene, this.x, this.y, typeKey);
+      dropped.setDropped();
+
+      return dropped;
+    },
+
+    /**
+     * Clear the currently held powerup without dropping it.
+     * Used when duration expires or powerup is consumed (e.g. Big Bullet fired).
+     */
+    clearPowerup: function () {
+      this._powerupType = null;
+      this._powerupTimeLeft = 0;
+
+      // Remove visual glow
+      if (this._powerupGlow) {
+        this._powerupGlow.destroy();
+        this._powerupGlow = null;
+      }
+    },
+
     _checkVerticalWrap: function (holes, gameSize, boundaryThickness) {
       var playerCenterX = this.x;
       var inHole = false;
