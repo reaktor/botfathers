@@ -609,8 +609,16 @@ Randomised Arena (config.js):
 - On each game load, randomise AP.HOLES positions:
   - Always 2 holes in floor/ceiling, but randomise their x position (keep width ~0.12)
   - Constrain: holes must be at least 0.25 apart, not at extreme edges (0.05-0.83 range)
-- Optionally shuffle platform y positions slightly (+/- 5% of game size) for variety
-- Keep the same number of platforms (9) and roughly the same layout zones
+- Randomise platform positions each load:
+  - Keep 9 platforms in 3 tiers (3 bottom ~0.75-0.90, 3 mid ~0.40-0.60, 3 top ~0.10-0.25)
+  - Randomise x positions within each tier, spread across left/center/right zones
+  - Randomise y within tier range (+/- small offset)
+  - CRITICAL reachability constraint: every platform must be jumpable from at least one other platform or the floor
+    - Max vertical gap between reachable surfaces must be <= jump height (AP.JUMP_VELOCITY = -350, so roughly 0.18 * gameSize vertical reach)
+    - No platform should be isolated with no way to reach it
+    - Validate layout after generation: for each platform, check that at least one lower surface exists within jump range (vertical) and walk range (horizontal, accounting for screen wrap)
+    - If validation fails, regenerate
+  - Randomise widths slightly (0.20-0.40 range) but ensure total coverage gives enough landing area
 
 Procedural Background (SpriteFactory.js):
 - Generate a cyberpunk gothic space station background using canvas:
