@@ -5,6 +5,9 @@
   var muted = false;
   var masterVol = null;
   var jumpSynth = null;
+  var moveSynth = null;
+  var knockbackSynth = null;
+  var _moveLastTime = 0;
 
   AP.AudioManager = {
 
@@ -19,11 +22,13 @@
 
       Tone.start().then(function () {
         // Master volume
-        masterVol = new Tone.Volume(-8).toDestination();
+        masterVol = new Tone.Volume(-14).toDestination();
 
         AP.AudioManager._initBackground(masterVol);
         AP.AudioManager._initAmbient(masterVol);
         AP.AudioManager._initJumpSFX(masterVol);
+        AP.AudioManager._initMoveSFX(masterVol);
+        AP.AudioManager._initKnockbackSFX(masterVol);
         AP.AudioManager._initMuteKey();
 
         Tone.Transport.bpm.value = 90;
@@ -92,10 +97,42 @@
       });
     },
 
+    /** Soft footstep tick — rate-limited to every 150ms. */
+    _initMoveSFX: function (output) {
+      moveSynth = new Tone.NoiseSynth({
+        noise: { type: 'white' },
+        envelope: { attack: 0.002, decay: 0.04, sustain: 0, release: 0.01 }
+      }).connect(new Tone.Volume(-22).connect(output));
+    },
+
+    /** Punchy thud for knockback hits. */
+    _initKnockbackSFX: function (output) {
+      knockbackSynth = new Tone.MembraneSynth({
+        pitchDecay: 0.01,
+        octaves: 4,
+        envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.05 }
+      }).connect(new Tone.Volume(-8).connect(output));
+    },
+
     /** Play jump sound effect. Called from Player.js on jump. */
     playJump: function () {
       if (!started || !jumpSynth) return;
       jumpSynth.triggerAttackRelease('C5', '32n');
+    },
+
+    /** Play footstep tick. Rate-limited so it doesn't spam. */
+    playMove: function () {
+      if (!started || !moveSynth) return;
+      var now = Tone.now();
+      if (now - _moveLastTime < 0.15) return;
+      _moveLastTime = now;
+      moveSynth.triggerAttackRelease('32n');
+    },
+
+    /** Play knockback hit sound. */
+    playKnockback: function () {
+      if (!started || !knockbackSynth) return;
+      knockbackSynth.triggerAttackRelease('C1', '16n');
     }
   };
 })();

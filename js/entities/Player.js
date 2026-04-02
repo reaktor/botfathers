@@ -55,10 +55,16 @@
         this.body.setVelocityX(-AP.PLAYER_SPEED);
         this.facing = -1;
         moving = true;
+        if (this.body.blocked.down && AP.AudioManager && AP.AudioManager.playMove) {
+          AP.AudioManager.playMove();
+        }
       } else if (keys.right.isDown) {
         this.body.setVelocityX(AP.PLAYER_SPEED);
         this.facing = 1;
         moving = true;
+        if (this.body.blocked.down && AP.AudioManager && AP.AudioManager.playMove) {
+          AP.AudioManager.playMove();
+        }
       } else {
         // Apply drag instead of hard reset so gravity pull accumulates when idle
         this.body.velocity.x *= 0.85;
@@ -111,6 +117,9 @@
       this.body.setVelocityX(dirX * force);
       // No vertical component — only push in the hit direction
       this._knockbackTimer = 300; // invulnerable for 0.3s
+      if (AP.AudioManager && AP.AudioManager.playKnockback) {
+        AP.AudioManager.playKnockback();
+      }
     },
 
     isKnockbackActive: function () {
