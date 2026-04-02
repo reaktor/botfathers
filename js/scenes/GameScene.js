@@ -11,6 +11,12 @@
     },
 
     create: function () {
+      // Kill any leftover menu hero sprite
+      if (AP._menuHeroImg) {
+        if (AP._menuHeroImg.parentNode) AP._menuHeroImg.parentNode.removeChild(AP._menuHeroImg);
+        AP._menuHeroImg = null;
+      }
+
       var size = AP.gameSize;
       this.controls = AP.InputManager.create(this);
 

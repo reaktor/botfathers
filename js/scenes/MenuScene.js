@@ -121,12 +121,9 @@
         + 'left:' + (canvasRect.left + (centerX - spriteDisplaySize / 2) * scaleX) + 'px;'
         + 'top:' + (canvasRect.top + (spriteY - spriteDisplaySize / 2) * scaleY) + 'px;';
       document.body.appendChild(img);
+      // Store reference for cleanup AND keep closure ref
       this._heroImg = img;
-
-      // Clean up when leaving this scene
-      this.events.on('shutdown', function () {
-        if (img.parentNode) img.parentNode.removeChild(img);
-      });
+      AP._menuHeroImg = img;
 
       // --- Decorative separator line ---
       var separatorY = spriteY + spriteDisplaySize / 2 + 12;
@@ -388,9 +385,12 @@
       // Start game on Enter
       if (Phaser.Input.Keyboard.JustDown(this._enterKey) && this._canInput) {
         this._canInput = false;
-        // Remove hero sprite immediately
-        if (this._heroImg && this._heroImg.parentNode) {
-          this._heroImg.parentNode.removeChild(this._heroImg);
+        // Remove hero sprite immediately via global ref
+        var heroImg = AP._menuHeroImg || this._heroImg;
+        if (heroImg) {
+          heroImg.style.display = 'none';
+          if (heroImg.parentNode) heroImg.parentNode.removeChild(heroImg);
+          AP._menuHeroImg = null;
         }
         this.scene.start('GameScene', { playerCount: this.playerCount });
       }
