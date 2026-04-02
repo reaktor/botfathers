@@ -40,6 +40,17 @@
 
       // Store for update
       this.boundaryThickness = BOUNDARY_THICKNESS;
+
+      // --- Black Hole ---
+      this.setupBlackHole();
+    },
+
+    setupBlackHole: function () {
+      var size = AP.gameSize;
+      // Place near center of arena
+      this.blackHole = new AP.BlackHole(this, size * 0.5, size * 0.5);
+      // Store on namespace so other systems (GravitySystem) can access it
+      AP.blackHoleInstance = this.blackHole;
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -77,6 +88,23 @@
           AP.gameSize,
           this.boundaryThickness
         );
+      }
+
+      // Update black hole (drift, grow, redraw)
+      if (this.blackHole) {
+        this.blackHole.update(time, delta);
+
+        // Kill zone check — instant death on contact
+        if (this.player && this.player.active &&
+            this.blackHole.isInKillZone(this.player.x, this.player.y)) {
+          // If player has an eliminate method (added by Team 1), use it;
+          // otherwise just destroy
+          if (typeof this.player.eliminate === 'function') {
+            this.player.eliminate();
+          } else {
+            this.player.setActive(false).setVisible(false);
+          }
+        }
       }
     }
   });
