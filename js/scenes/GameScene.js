@@ -39,6 +39,14 @@
         plat.refreshBody();
         // Initialise collapse state (Team 2 Coder A)
         AP.PlatformCollapse.initCollapseState(plat, i);
+        // Mark moving platforms (Phase 2.75)
+        if (p.moving) {
+          plat._moving = true;
+          plat._moveOriginX = px;
+          plat._moveSpeed = p.moveSpeed * size;
+          plat._moveRange = p.moveRange * size;
+          plat._moveTime = Math.random() * Math.PI * 2; // random phase offset
+        }
         this._platformSprites.push(plat);
       }
 
@@ -382,6 +390,15 @@
       var children = this._platformSprites;
       for (var i = 0; i < children.length; i++) {
         var p = children[i];
+
+        // --- Moving platforms (Phase 2.75) ---
+        if (p._moving && p._collapseState === 'stable') {
+          p._moveTime += delta * 0.001;
+          var newX = p._moveOriginX + Math.sin(p._moveTime * p._moveSpeed * 10) * p._moveRange;
+          p.x = newX;
+          p.body.position.x = newX - p.body.width / 2;
+        }
+
         if (p._collapseState === 'warning') {
           p._collapseTimer += delta;
           p._flashTimer += delta;

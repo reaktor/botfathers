@@ -94,8 +94,8 @@
       { xMin: 0.55, xMax: 0.80 }   // right zone
     ];
 
-    var WIDTH_MIN = 0.20;
-    var WIDTH_MAX = 0.40;
+    var WIDTH_MIN = 0.22;
+    var WIDTH_MAX = 0.35;
 
     // Max vertical gap a player can jump (fraction of gameSize).
     // v0^2/(2g) = 500^2/(2*600) = 208.  Conservative fraction ~0.30.
@@ -121,8 +121,38 @@
         }
       }
 
+      // --- Minimum gap validation (no tiny gaps that trap players) ---
+      var MIN_GAP = 0.06; // minimum horizontal gap between platforms on same tier
+      var gapOk = true;
+      for (var a = 0; a < platforms.length && gapOk; a++) {
+        for (var b = a + 1; b < platforms.length && gapOk; b++) {
+          // Only check platforms in similar y range (same tier)
+          if (Math.abs(platforms[a].y - platforms[b].y) > 0.20) continue;
+          var aLeft = platforms[a].x;
+          var aRight = platforms[a].x + platforms[a].width;
+          var bLeft = platforms[b].x;
+          var bRight = platforms[b].x + platforms[b].width;
+          // Check if they overlap
+          if (aLeft < bRight && bLeft < aRight) { gapOk = false; break; }
+          // Check gap between them
+          var gap = Math.max(bLeft - aRight, aLeft - bRight);
+          if (gap > 0 && gap < MIN_GAP) { gapOk = false; break; }
+        }
+      }
+      if (!gapOk) continue;
+
       // --- Reachability validation ---
       if (validateReachability(platforms, MAX_JUMP_V, MAX_JUMP_H)) {
+        // Mark ~3 platforms as moving (one per tier, random pick)
+        var tierIndices = [[0,1,2],[3,4,5],[6,7,8]];
+        for (var mi = 0; mi < tierIndices.length; mi++) {
+          if (Math.random() < 0.6) { // 60% chance per tier
+            var pick = tierIndices[mi][Math.floor(Math.random() * 3)];
+            platforms[pick].moving = true;
+            platforms[pick].moveSpeed = randRange(0.015, 0.04); // fraction of gameSize per second
+            platforms[pick].moveRange = randRange(0.08, 0.15);  // how far it drifts from origin
+          }
+        }
         return platforms;
       }
     }
