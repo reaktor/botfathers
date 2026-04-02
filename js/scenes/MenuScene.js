@@ -105,7 +105,7 @@
 
       // --- Single centered character sprite (original colors, no tint) ---
       var spriteTexture = AP.botfatherLoaded ? 'botfather-idle' : 'player-fallback';
-      var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 3.5;
+      var spriteDisplaySize = AP.PLAYER_RENDER_SIZE * 5;
       var spriteScale = spriteDisplaySize / (AP.botfatherLoaded ? 214 : AP.PLAYER_RENDER_SIZE);
       var spriteY = titleY + titleLine1.height + titleLine2.height + tagline.height + spriteDisplaySize / 2 + 20;
 
