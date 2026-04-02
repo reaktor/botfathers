@@ -288,7 +288,7 @@ Do NOT modify any files. Report findings to the human dev.
 
 ---
 
-### Team 3 (Johan) — Black Hole + Gravity
+### Team 3 — Black Hole + Gravity
 
 #### Team 3 Coder A — Black Hole
 ```
