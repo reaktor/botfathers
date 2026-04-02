@@ -10,7 +10,7 @@
 
     create: function () {
       AP.SpriteFactory.createTextures(this);
-      this.scene.start('GameScene');
+      this.scene.start('MenuScene');
     }
   });
 })();
