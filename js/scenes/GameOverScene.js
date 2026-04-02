@@ -54,14 +54,23 @@
       winText.setOrigin(0.5);
       winText.setDepth(10);
 
-      // Pulsing glow effect on winner text
+      // Fade in winner text then gentle pulse
+      winText.setAlpha(0);
       this.tweens.add({
         targets: winText,
-        alpha: { from: 1, to: 0.5 },
-        duration: 800,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
+        alpha: 0.5,
+        duration: 1500,
+        ease: 'Sine.easeOut',
+        onComplete: function () {
+          winText.scene.tweens.add({
+            targets: winText,
+            alpha: { from: 0.5, to: 1 },
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+        }
       });
 
       // --- Neon glow line below winner text ---
@@ -80,15 +89,14 @@
       restartText.setOrigin(0.5);
       restartText.setDepth(10);
 
-      // Blinking prompt
+      // Gentle blinking prompt
       this.tweens.add({
         targets: restartText,
-        alpha: { from: 1, to: 0 },
-        duration: 600,
+        alpha: { from: 1, to: 0.25 },
+        duration: 1200,
         yoyo: true,
         repeat: -1,
-        ease: 'Stepped',
-        easeParams: [1]
+        ease: 'Sine.easeInOut'
       });
 
       // --- Neon glow line at bottom ---

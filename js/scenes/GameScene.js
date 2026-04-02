@@ -135,6 +135,9 @@
       // --- Chaos event system (Team 2 Coder B) ---
       this.setupChaos();
 
+      // --- Player health HUD ---
+      this.setupHUD();
+
       // --- Countdown before gameplay begins (Team 2 Agent B — Phase 2.5) ---
       this._startCountdown();
     },
@@ -489,6 +492,9 @@
         }
       }
 
+      // Update health HUD
+      this.updateHUD();
+
       // Win condition check
       this.checkWinCondition();
     },
@@ -551,15 +557,40 @@
 
         if (!b.active) continue;
 
-        // Horizontal wrap — bullets go through the sides
-        if (b.x < -10) {
-          b.x = gameSize + 10;
-        } else if (b.x > gameSize + 10) {
-          b.x = -10;
+        // Black hole gravity pull on bullets
+        var bh = AP.blackHoleInstance;
+        if (bh) {
+          var gdx = bh.x - b.x;
+          var gdy = bh.y - b.y;
+          var gDistSq = gdx * gdx + gdy * gdy;
+          var gDist = Math.sqrt(gDistSq);
+          if (gDist < 30) gDist = 30;
+          gDistSq = gDist * gDist;
+
+          var pullStr = bh.pullStrength;
+          if (AP.ChaosEventSystem && AP.ChaosEventSystem.isActive && AP.ChaosEventSystem.isActive('gravitySurge')) {
+            pullStr *= 2;
+          }
+
+          var gForce = pullStr / gDistSq;
+          if (gForce > 2000) gForce = 2000;
+
+          var dt = delta / 1000;
+          var gnx = gdx / gDist;
+          var gny = gdy / gDist;
+          b.body.velocity.x += gnx * gForce * dt;
+          b.body.velocity.y += gny * gForce * dt;
+
+          // Feed black hole if bullet enters kill zone
+          if (bh.isInKillZone(b.x, b.y)) {
+            bh.feedBullet();
+            b.recycle();
+            continue;
+          }
         }
 
-        // Recycle only if off-screen vertically
-        if (b.y < -50 || b.y > gameSize + 50) {
+        // Recycle if off-screen (any edge)
+        if (b.x < -10 || b.x > gameSize + 10 || b.y < -50 || b.y > gameSize + 50) {
           b.recycle();
         }
       }
@@ -656,6 +687,80 @@
     },
 
     // --- Team 2 Coder B: Chaos events ---
+
+    // --- Health HUD ---
+
+    setupHUD: function () {
+      var size = AP.gameSize;
+      var playerCount = this.playerCount;
+      var colors = AP.PLAYER_COLORS;
+      var maxHp = 3;
+
+      this._hudHearts = [];
+
+      // Layout: evenly space player groups across the top
+      var groupWidth = size / playerCount;
+      var heartSize = Math.max(8, Math.min(14, size * 0.018));
+      var heartGap = heartSize * 1.6;
+      var yPos = 28;
+
+      for (var i = 0; i < playerCount; i++) {
+        var hearts = [];
+        var cx = groupWidth * i + groupWidth / 2;
+        var startX = cx - ((maxHp - 1) * heartGap) / 2;
+
+        // Player label
+        var label = this.add.text(cx, yPos - heartSize - 4, 'P' + (i + 1), {
+          fontFamily: 'Courier New, monospace',
+          fontSize: Math.round(heartSize * 1.1) + 'px',
+          color: '#' + ('000000' + colors[i].toString(16)).slice(-6),
+          fontStyle: 'bold'
+        }).setOrigin(0.5, 1).setDepth(900);
+        label.setShadow(0, 0, '#000000', 3);
+
+        for (var h = 0; h < maxHp; h++) {
+          var hx = startX + h * heartGap;
+          var gfx = this.add.graphics().setDepth(900);
+          this._drawHeart(gfx, hx, yPos, heartSize, colors[i], 1);
+          hearts.push({ gfx: gfx, x: hx, y: yPos, size: heartSize, color: colors[i] });
+        }
+
+        this._hudHearts.push({ hearts: hearts, label: label, lastHp: maxHp });
+      }
+    },
+
+    _drawHeart: function (gfx, x, y, size, color, alpha) {
+      gfx.clear();
+      // Filled heart shape
+      gfx.fillStyle(color, alpha);
+      gfx.fillCircle(x - size * 0.3, y - size * 0.15, size * 0.45);
+      gfx.fillCircle(x + size * 0.3, y - size * 0.15, size * 0.45);
+      gfx.fillTriangle(
+        x - size * 0.7, y + size * 0.05,
+        x + size * 0.7, y + size * 0.05,
+        x, y + size * 0.75
+      );
+    },
+
+    updateHUD: function () {
+      if (!this._hudHearts) return;
+
+      for (var i = 0; i < this._hudHearts.length; i++) {
+        var data = this._hudHearts[i];
+        var player = this.players[i];
+        var hp = player.alive ? player.hp : 0;
+
+        if (hp !== data.lastHp) {
+          data.lastHp = hp;
+          var hearts = data.hearts;
+          for (var h = 0; h < hearts.length; h++) {
+            var heart = hearts[h];
+            var alive = h < hp;
+            this._drawHeart(heart.gfx, heart.x, heart.y, heart.size, heart.color, alive ? 1 : 0.15);
+          }
+        }
+      }
+    },
 
     setupChaos: function () {
       this.chaosSystem = new AP.ChaosEventSystem(this);
