@@ -478,6 +478,29 @@ All coders work in parallel. Managers review after coders commit.
 
 ---
 
+### Phase 2C — Multi-player Rendering (Team 3) `[NOT STARTED]`
+**Who:** Team 3 (Johan)
+**Files:** Modify `js/scenes/GameScene.js`, `js/entities/Player.js`
+
+**Goal:** Replace the single-player setup with proper 2-4 player spawning so all players are rendered and controllable.
+
+**Spec:**
+- Read `playerCount` from scene data (passed by MenuScene): `this.scene.settings.data.playerCount || 4`
+- Replace `this.player` with `this.players[]` array
+- Spawn players in 4 corners of the arena with distinct colors
+- All 4 control schemes from `InputManager` active simultaneously
+- Each player collides with platforms
+- Register all players with `GravitySystem.addBody()`
+- Kill zone check loops over all players
+- Players pass through each other (no player-player collision)
+- Backwards compatible: if no MenuScene data, default to 4 players
+- **Win condition:** When only 1 player remains alive, end the match and transition to GameOverScene showing which player won (e.g. "Player 2 wins!")
+- `checkWinCondition()` runs each frame — counts alive players, triggers game over when <= 1
+
+**Testable:** Open index.html — 2-4 colored players spawn in corners, each controllable with their own keys, all affected by gravity and black hole kill zone. When all but one player die (black hole), game ends and shows the winner.
+
+---
+
 ### Phase 3 — Integration `[NOT STARTED]`
 **Who:** All together (one session on main)
 
