@@ -61,6 +61,9 @@
       // --- Black Hole ---
       this.setupBlackHole();
 
+      // --- Gravity system (must come after black hole) ---
+      this.setupGravity();
+
       // --- Chaos event system (Team 2 Coder B) ---
       this.setupChaos();
     },
@@ -69,6 +72,24 @@
       var size = AP.gameSize;
       this.blackHole = new AP.BlackHole(this, size * 0.5, size * 0.5);
       AP.blackHoleInstance = this.blackHole;
+    },
+
+    setupGravity: function () {
+      AP.GravitySystem.reset();
+
+      if (this.player) {
+        AP.GravitySystem.addBody(this.player);
+      }
+
+      if (this.players) {
+        for (var i = 0; i < this.players.length; i++) {
+          AP.GravitySystem.addBody(this.players[i]);
+        }
+      }
+    },
+
+    updateGravity: function (delta) {
+      AP.GravitySystem.update(delta);
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -107,6 +128,10 @@
           this.boundaryThickness
         );
       }
+
+      // Gravity after input so pull accumulates when idle
+      this.updateGravity(delta);
+
       this.updatePlatforms(delta);
       this.updateChaos(time, delta);
 
