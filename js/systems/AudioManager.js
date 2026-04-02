@@ -7,6 +7,9 @@
   var jumpSynth = null;
   var moveSynth = null;
   var knockbackSynth = null;
+  var deathSynth = null;
+  var deathNoise = null;
+  var deathOutput = null;
   var _moveLastTime = 0;
 
   AP.AudioManager = {
@@ -33,6 +36,7 @@
         AP.AudioManager._initJumpSFX(masterVol);
         AP.AudioManager._initMoveSFX(masterVol);
         AP.AudioManager._initKnockbackSFX(masterVol);
+        AP.AudioManager._initDeathSFX(masterVol);
         AP.AudioManager._initMuteKey();
 
         Tone.Transport.bpm.value = 90;
@@ -133,10 +137,44 @@
       moveSynth.triggerAttackRelease('32n');
     },
 
+    /** Horrific death screech — descending distorted tone + noise burst. */
+    _initDeathSFX: function (output) {
+      deathOutput = new Tone.Volume(4).connect(output);
+
+      // Screaming descending tone with distortion
+      var distortion = new Tone.Distortion(0.8).connect(deathOutput);
+      deathSynth = new Tone.Synth({
+        oscillator: { type: 'sawtooth' },
+        envelope: { attack: 0.01, decay: 0.6, sustain: 0.1, release: 0.4 }
+      }).connect(distortion);
+
+      // Noise burst layered on top
+      deathNoise = new Tone.NoiseSynth({
+        noise: { type: 'pink' },
+        envelope: { attack: 0.005, decay: 0.3, sustain: 0.05, release: 0.2 }
+      }).connect(new Tone.Volume(-2).connect(deathOutput));
+    },
+
     /** Play knockback hit sound. */
     playKnockback: function () {
       if (!started || !knockbackSynth) return;
       knockbackSynth.triggerAttackRelease('C1', '16n');
+    },
+
+    /** Play horrific death sound on head stomp. */
+    playDeath: function () {
+      if (!started || !deathSynth) return;
+      // Descending screech from high to low
+      var now = Tone.now();
+      deathSynth.triggerAttackRelease('C5', '4n', now);
+      deathSynth.frequency.setValueAtTime(Tone.Frequency('C5').toFrequency(), now);
+      deathSynth.frequency.exponentialRampToValueAtTime(
+        Tone.Frequency('C2').toFrequency(), now + 0.5
+      );
+      // Noise burst
+      if (deathNoise) {
+        deathNoise.triggerAttackRelease('8n', now);
+      }
     }
   };
 })();

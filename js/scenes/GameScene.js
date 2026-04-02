@@ -206,6 +206,9 @@
       // A stomps B (A is falling, A's feet near B's head)
       if (playerA.body.velocity.y > 0 && aBottom >= bTop && aBottom <= bTop + stompThreshold) {
         playerA.stompBounce();
+        if (AP.AudioManager && AP.AudioManager.playDeath) {
+          AP.AudioManager.playDeath();
+        }
         if (typeof playerB.eliminate === 'function') {
           playerB.eliminate();
         } else {
@@ -217,6 +220,9 @@
       // B stomps A
       if (playerB.body.velocity.y > 0 && bBottom >= aTop && bBottom <= aTop + stompThreshold) {
         playerB.stompBounce();
+        if (AP.AudioManager && AP.AudioManager.playDeath) {
+          AP.AudioManager.playDeath();
+        }
         if (typeof playerA.eliminate === 'function') {
           playerA.eliminate();
         } else {
