@@ -66,12 +66,18 @@
       this._animImg = null;
       this._animState = '';
       if (ANIM_MAP.idle) {
+        // CSS hue-rotate values per player to match their neon colors
+        // P1 cyan(180°), P2 magenta(300°), P3 green(120°), P4 orange(30°)
+        var hueAngles = [180, 300, 120, 30];
+        var hue = hueAngles[this.playerIndex] || 0;
+
         var wrapper = document.createElement('div');
         wrapper.className = 'ap-sprite-overlay';
         wrapper.style.cssText = 'position:absolute;pointer-events:none;overflow:hidden;';
         var img = document.createElement('img');
         img.src = ANIM_MAP.idle;
-        img.style.cssText = 'width:100%;height:100%;image-rendering:pixelated;display:block;';
+        img.style.cssText = 'width:100%;height:100%;image-rendering:pixelated;display:block;'
+          + 'filter:hue-rotate(' + hue + 'deg) saturate(2) brightness(1.3);';
         wrapper.appendChild(img);
         document.body.appendChild(wrapper);
         this._animImg = img;
