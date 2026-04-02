@@ -53,3 +53,9 @@
   AP.gameSize = size;
   AP.config = config;
 })();
+
+// Boot the game after all scripts have loaded
+window.addEventListener('load', function () {
+  AP.config.scene = [AP.BootScene, AP.GameScene];
+  AP.game = new Phaser.Game(AP.config);
+});
