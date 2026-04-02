@@ -43,14 +43,33 @@
 
       // --- Black Hole ---
       this.setupBlackHole();
+
+      // --- Gravity system (must come after black hole) ---
+      this.setupGravity();
     },
 
     setupBlackHole: function () {
       var size = AP.gameSize;
-      // Place near center of arena
       this.blackHole = new AP.BlackHole(this, size * 0.5, size * 0.5);
-      // Store on namespace so other systems (GravitySystem) can access it
       AP.blackHoleInstance = this.blackHole;
+    },
+
+    setupGravity: function () {
+      AP.GravitySystem.reset();
+
+      if (this.player) {
+        AP.GravitySystem.addBody(this.player);
+      }
+
+      if (this.players) {
+        for (var i = 0; i < this.players.length; i++) {
+          AP.GravitySystem.addBody(this.players[i]);
+        }
+      }
+    },
+
+    updateGravity: function (delta) {
+      AP.GravitySystem.update(delta);
     },
 
     _buildBoundary: function (edgeX, edgeY, edgeW, edgeH) {
@@ -80,6 +99,8 @@
     },
 
     update: function (time, delta) {
+      this.updateGravity(delta);
+
       if (this.player && this.player.active) {
         this.player.handleInput(
           this.controls[0],
